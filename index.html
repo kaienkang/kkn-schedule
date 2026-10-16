@@ -2,8 +2,16 @@
 <html lang="zh-TW">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
   <title>2026 個人事工與任務總控系統 OS</title>
+  <!-- iPhone / iOS 與 Android 桌面 App (PWA) 專屬設定 -->
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="事工總控OS">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="theme-color" content="#0f172a">
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 120 120'%3E%3Crect width='120' height='120' rx='28' fill='%230f172a'/%3E%3Crect x='10' y='10' width='100' height='100' rx='22' fill='none' stroke='%23f59e0b' stroke-width='4'/%3E%3Ctext x='60' y='52' font-family='sans-serif' font-size='26' font-weight='900' fill='%23f59e0b' text-anchor='middle'%3E2026%3C/text%3E%3Ctext x='60' y='86' font-family='sans-serif' font-size='28' font-weight='900' fill='%23ffffff' text-anchor='middle'%3EOS%3C/text%3E%3C/svg%3E">
+  <link rel="apple-touch-icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 120 120'%3E%3Crect width='120' height='120' rx='28' fill='%230f172a'/%3E%3Crect x='10' y='10' width='100' height='100' rx='22' fill='none' stroke='%23f59e0b' stroke-width='4'/%3E%3Ctext x='60' y='52' font-family='sans-serif' font-size='26' font-weight='900' fill='%23f59e0b' text-anchor='middle'%3E2026%3C/text%3E%3Ctext x='60' y='86' font-family='sans-serif' font-size='28' font-weight='900' fill='%23ffffff' text-anchor='middle'%3EOS%3C/text%3E%3C/svg%3E">
   <script src="https://cdn.tailwindcss.com"></script>
   <style>
     @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;600;700&display=swap');
@@ -12,7 +20,16 @@
       --col1-w: 130px;
       --col2-w: 350px;
     }
-    body { font-family: 'Noto Sans TC', sans-serif; background-color: #f8fafc; color: #1e293b; }
+    body {
+      font-family: 'Noto Sans TC', sans-serif;
+      background-color: #f8fafc;
+      color: #1e293b;
+      padding-bottom: env(safe-area-inset-bottom);
+      -webkit-tap-highlight-color: transparent;
+    }
+    header {
+      padding-top: env(safe-area-inset-top);
+    }
     .custom-scroll::-webkit-scrollbar { width: 6px; height: 6px; }
     .custom-scroll::-webkit-scrollbar-track { background: #f1f5f9; }
     .custom-scroll::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 3px; }
@@ -61,9 +78,11 @@
 
       <!-- 右上角：當前基準 (點擊跳至當週) + 收合/展開工具列 -->
       <div class="flex items-center gap-1.5 sm:gap-2 shrink-0">
-        <button onclick="jumpToCurrentWeek()" title="點擊直接跳至本週進度" class="text-[11px] sm:text-xs font-medium bg-slate-800 hover:bg-amber-500/20 text-amber-300 hover:text-amber-200 px-2.5 py-1.5 rounded-lg border border-amber-500/40 transition flex items-center gap-1 shadow-sm cursor-pointer">
-          <span>📍 當前基準：</span>
-          <span id="current-week-badge-text" class="font-bold">載入中...</span>
+        <button onclick="jumpToCurrentWeek()" title="點擊直接跳至本週進度" class="text-[11px] sm:text-xs font-medium bg-slate-800 hover:bg-amber-500/20 text-amber-300 hover:text-amber-200 px-2 sm:px-2.5 py-1.5 rounded-lg border border-amber-500/40 transition flex items-center gap-1 shadow-sm cursor-pointer">
+          <span class="hidden sm:inline">📍 當前基準：</span>
+          <span class="sm:hidden">📍</span>
+          <span id="current-week-badge-text" class="font-bold hidden sm:inline">載入中...</span>
+          <span id="current-week-badge-text-short" class="font-bold sm:hidden">載入中...</span>
         </button>
         <button onclick="toggleHeaderToolbar()" id="btn-toggle-toolbar" title="收合/展開下方工具列" class="bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white px-2.5 py-1.5 rounded-lg border border-slate-700 text-xs transition flex items-center gap-1">
           <span id="toolbar-toggle-icon">🔼</span>
@@ -76,34 +95,31 @@
     <div id="collapsible-toolbar-wrapper" class="border-t border-slate-800 bg-slate-900/95 transition-all">
       <div class="max-w-[1600px] mx-auto px-3 sm:px-4 py-2 flex items-center justify-between gap-2 overflow-x-auto custom-scroll whitespace-nowrap">
         <div class="flex items-center gap-1.5 sm:gap-2 text-xs">
-          <!-- 分頁切換 -->
+          <!-- 分頁切換：📅 滾動週任務表 📦 歷史歸檔 -->
           <div class="flex items-center gap-1 bg-slate-800 p-1 rounded-lg border border-slate-700/80">
             <button onclick="switchTab('rolling')" id="tab-rolling" class="tab-btn bg-amber-500 text-slate-950 font-bold px-2.5 sm:px-3 py-1 rounded-md transition">📅 滾動週任務表</button>
             <button onclick="switchTab('history')" id="tab-history" class="tab-btn text-slate-300 hover:text-white px-2.5 sm:px-3 py-1 rounded-md transition">📦 歷史歸檔</button>
           </div>
 
-          <!-- Undo / Redo -->
+          <!-- Undo / Redo：↩️↪️ -->
           <div class="flex items-center bg-slate-800 rounded-md border border-slate-700 overflow-hidden shadow-sm">
             <button id="btn-undo" onclick="undo()" title="還原上一步 (Undo)" class="px-2.5 py-1.5 text-slate-300 hover:text-white hover:bg-slate-700 transition disabled:opacity-30 disabled:cursor-not-allowed">↩️</button>
             <div class="w-px h-3.5 bg-slate-600"></div>
             <button id="btn-redo" onclick="redo()" title="重做 (Redo)" class="px-2.5 py-1.5 text-slate-300 hover:text-white hover:bg-slate-700 transition disabled:opacity-30 disabled:cursor-not-allowed">↪️</button>
           </div>
 
-          <!-- 新增 -->
+          <!-- ➕ 新增 -->
           <button onclick="openAddModal()" class="bg-emerald-600 hover:bg-emerald-500 text-white font-semibold px-2.5 sm:px-3 py-1.5 rounded-md shadow flex items-center gap-1 transition">
             <span>➕ 新增</span>
           </button>
 
-          <!-- 匯出 / 匯入 -->
-          <button onclick="exportData()" title="匯出 JSON 備份檔案 (檔名同裝置日期)" class="bg-slate-800 hover:bg-slate-700 text-slate-200 px-2.5 py-1.5 rounded-md border border-slate-700 transition flex items-center gap-1">
-            <span>⬇️ 匯出</span>
+          <!-- 📌 任務池 -->
+          <button id="btn-toggle-backlog" onclick="toggleBacklogDrawer()" class="bg-indigo-600 hover:bg-indigo-500 text-white font-semibold px-2.5 sm:px-3 py-1.5 rounded-md shadow flex items-center gap-1 transition text-xs shrink-0">
+            <span>📌 任務池</span>
+            <span id="backlog-count-badge" class="bg-indigo-900 text-indigo-200 px-1.5 py-0.2 rounded-full text-[11px]">0</span>
           </button>
-          <button onclick="triggerImportData()" title="從 JSON 備份檔案匯入資料" class="bg-slate-800 hover:bg-slate-700 text-slate-200 px-2.5 py-1.5 rounded-md border border-slate-700 transition flex items-center gap-1">
-            <span>⬆️ 匯入</span>
-          </button>
-          <input type="file" id="import-file-input" accept=".json,application/json" class="hidden" onchange="handleImportFile(event)">
 
-          <!-- 儲存 / 歷史版本 -->
+          <!-- 💾 儲存 / 🕒 歷史 -->
           <button onclick="openSaveVersionModal()" title="儲存當前狀態為一個版本" class="bg-teal-600 hover:bg-teal-500 text-white font-semibold px-2.5 sm:px-3 py-1.5 rounded-md shadow flex items-center gap-1 transition">
             <span>💾 儲存</span>
           </button>
@@ -111,18 +127,15 @@
             <span>🕒 歷史</span>
           </button>
 
-          <!-- Google 雲端同步設定 -->
-          <button onclick="openCloudSyncModal()" id="btn-cloud-sync" title="設定 Google 試算表雲端自動同步" class="bg-slate-800 hover:bg-slate-700 text-sky-300 hover:text-sky-200 px-2.5 sm:px-3 py-1.5 rounded-md shadow transition flex items-center gap-1.5 border border-sky-500/40">
-            <span id="cloud-status-dot" class="w-2 h-2 rounded-full bg-slate-500"></span>
-            <span id="cloud-status-text">☁️ 雲端同步</span>
+          <!-- ⬇️ 匯出 / ⬆️ 匯入 -->
+          <button onclick="exportData()" title="匯出 JSON 備份檔案 (含所有類別、顏色與圖示，檔名同裝置日期)" class="bg-slate-800 hover:bg-slate-700 text-slate-200 px-2.5 py-1.5 rounded-md border border-slate-700 transition flex items-center gap-1">
+            <span>⬇️ 匯出</span>
           </button>
+          <button onclick="triggerImportData()" title="從 JSON 備份檔案匯入資料與類別設定" class="bg-slate-800 hover:bg-slate-700 text-slate-200 px-2.5 py-1.5 rounded-md border border-slate-700 transition flex items-center gap-1">
+            <span>⬆️ 匯入</span>
+          </button>
+          <input type="file" id="import-file-input" accept=".json,application/json" class="hidden" onchange="handleImportFile(event)">
         </div>
-
-        <!-- 右側：任務池抽屜開關 -->
-        <button id="btn-toggle-backlog" onclick="toggleBacklogDrawer()" class="bg-indigo-600 hover:bg-indigo-500 text-white font-semibold px-2.5 sm:px-3 py-1.5 rounded-md shadow flex items-center gap-1 transition text-xs shrink-0">
-          <span>📌 任務池</span>
-          <span id="backlog-count-badge" class="bg-indigo-900 text-indigo-200 px-1.5 py-0.2 rounded-full text-[11px]">0</span>
-        </button>
       </div>
 
       <!-- 連結列 -->
@@ -285,86 +298,6 @@
         💡 點擊「載入」會將整個系統恢復至該儲存檔的狀態。載入前請確定當前的進度不需要保留。
       </div>
       <div id="version-history-list" class="space-y-2 max-h-[50vh] overflow-y-auto custom-scroll pr-1"></div>
-    </div>
-  </div>
-
-  <!-- Cloud Sync Modal (Google Sheets / Apps Script) -->
-  <div id="cloud-sync-modal" class="fixed inset-0 bg-slate-900/60 hidden items-center justify-center z-[90] p-4 opacity-0 transition-opacity duration-200" onclick="if(event.target === this) closeCloudSyncModal()">
-    <div class="bg-white rounded-2xl shadow-xl max-w-lg w-full p-5 border border-slate-200 transform scale-95 transition-transform duration-200 max-h-[90vh] flex flex-col" id="cloud-sync-modal-box">
-      <div class="flex items-center justify-between border-b border-slate-200 pb-3 mb-3 shrink-0">
-        <h3 class="font-bold text-base text-slate-800 flex items-center gap-1.5">☁️ Google 試算表跨裝置雲端同步</h3>
-        <button onclick="closeCloudSyncModal()" class="text-slate-400 hover:text-slate-600">✕</button>
-      </div>
-
-      <div class="space-y-4 text-xs overflow-y-auto custom-scroll pr-1 flex-1">
-        <!-- 狀態列與快速同步按鈕 -->
-        <div class="bg-slate-50 border border-slate-200 rounded-xl p-3 flex flex-wrap items-center justify-between gap-2">
-          <div>
-            <div class="font-bold text-slate-700 flex items-center gap-1.5">
-              <span>目前狀態：</span>
-              <span id="modal-cloud-status-badge" class="px-2 py-0.5 rounded-full text-[11px] bg-slate-200 text-slate-700 font-semibold">未綁定</span>
-            </div>
-            <div id="modal-cloud-last-sync" class="text-[11px] text-slate-500 mt-0.5">綁定網址後，任何修改皆會自動背景同步至您的 Google 雲端</div>
-          </div>
-          <div class="flex items-center gap-1.5">
-            <button type="button" onclick="syncFromCloud(true)" class="bg-sky-600 hover:bg-sky-500 text-white font-bold px-2.5 py-1.5 rounded-lg shadow-sm transition flex items-center gap-1">
-              <span>⬇️ 從雲端讀取</span>
-            </button>
-            <button type="button" onclick="syncToCloud(true)" class="bg-emerald-600 hover:bg-emerald-500 text-white font-bold px-2.5 py-1.5 rounded-lg shadow-sm transition flex items-center gap-1">
-              <span>⬆️ 立即上傳雲端</span>
-            </button>
-          </div>
-        </div>
-
-        <!-- 網址與密碼設定 -->
-        <div class="space-y-2.5">
-          <div>
-            <label class="font-bold text-slate-700 block mb-1">1. Google Apps Script 網頁應用程式網址 (Web App URL)：</label>
-            <input type="url" id="cloud-webhook-url" placeholder="https://script.google.com/macros/s/....../exec" class="w-full border border-slate-300 rounded-lg px-3 py-2 font-mono text-[11px] focus:outline-none focus:ring-2 focus:ring-sky-500">
-          </div>
-          <div>
-            <label class="font-bold text-slate-700 block mb-1">2. 同步安全通行碼 (選填，若設定則所有裝置需一致)：</label>
-            <input type="text" id="cloud-secret-token" placeholder="例如：my-secret-2026（留空代表不驗證通行碼）" class="w-full border border-slate-300 rounded-lg px-3 py-1.5 text-xs focus:outline-none focus:ring-2 focus:ring-sky-500">
-          </div>
-          <div class="flex items-center justify-between pt-1">
-            <label class="flex items-center gap-1.5 text-slate-700 font-medium cursor-pointer">
-              <input type="checkbox" id="cloud-auto-sync-toggle" checked class="rounded text-sky-600">
-              <span>啟用自動雲端同步（開啟網頁自動拉取、修改資料自動上傳）</span>
-            </label>
-          </div>
-        </div>
-
-        <!-- 3分鐘架設教學與一鍵複製 GAS 程式碼 -->
-        <div class="border-t border-slate-200 pt-3">
-          <div class="flex items-center justify-between mb-2">
-            <span class="font-bold text-slate-800">📖 第一次使用？3 分鐘免費串接個人 Google 試算表教學：</span>
-            <button type="button" onclick="copyGasScriptCode()" class="bg-indigo-600 hover:bg-indigo-500 text-white font-bold px-2.5 py-1 rounded-md shadow-sm transition text-[11px]">📋 一鍵複製 GAS 程式碼</button>
-          </div>
-          <ol class="list-decimal list-inside space-y-1.5 text-slate-600 bg-amber-50/70 border border-amber-200 rounded-xl p-3 leading-relaxed">
-            <li>前往 <a href="https://sheets.new" target="_blank" rel="noopener noreferrer" class="text-indigo-600 font-bold underline">Google 試算表 (點此新增空白試算表)</a>。</li>
-            <li>點選試算表頂端選單的 <b>「擴充功能」＞「Apps Script」</b>。</li>
-            <li>將編輯器原本的程式碼清空，點擊右上方 <b>「📋 一鍵複製 GAS 程式碼」</b> 並貼上，按 <code>Ctrl+S</code>（或 💾 圖示）儲存。</li>
-            <li>點擊右上角藍色按鈕 <b>「部署」＞「新增部署作業」</b>：
-              <ul class="list-disc list-inside ml-4 mt-1 text-[11px] text-slate-600 space-y-0.5">
-                <li>左上角齒輪「選取類型」選擇 <b>「網頁應用程式」</b></li>
-                <li>「執行身分」選擇 <b>「我」</b></li>
-                <li>「誰可以存取」務必選擇 <b>「所有人」</b>（最關鍵！）</li>
-              </ul>
-            </li>
-            <li>點擊「部署」並完成 Google 帳號授權（若出現「Google 尚未驗證這個應用程式」，點選左下角「進階」＞「前往...(不安全)」＞「允許」）。</li>
-            <li>複製產生的 <b>「網頁應用程式網址 (以 /exec 結尾)」</b>，貼到上方第 1 欄並點擊下方「💾 儲存並連線測試」即可！之後手機與電腦只要貼上同一串網址就能全自動同步。</li>
-          </ol>
-          <textarea id="gas-code-template" readonly class="w-full h-24 mt-2 p-2 bg-slate-900 text-emerald-300 font-mono text-[10px] rounded-lg border border-slate-700 custom-scroll"></textarea>
-        </div>
-      </div>
-
-      <div class="flex items-center justify-between gap-2 mt-4 pt-3 border-t border-slate-200 shrink-0">
-        <button type="button" onclick="disconnectCloudSync()" class="px-3 py-2 rounded-lg text-rose-600 hover:bg-rose-50 text-xs font-medium transition">清除雲端設定</button>
-        <div class="flex gap-2">
-          <button type="button" onclick="closeCloudSyncModal()" class="px-4 py-2 rounded-lg border border-slate-300 text-slate-600 hover:bg-slate-100 text-xs transition">關閉</button>
-          <button type="button" onclick="saveCloudConfigAndSync()" class="px-4 py-2 rounded-lg bg-sky-600 hover:bg-sky-500 text-white font-bold text-xs shadow transition">💾 儲存設定並同步</button>
-        </div>
-      </div>
     </div>
   </div>
 
@@ -866,87 +799,6 @@
     const STORAGE_KEY_DATA_BACKUP = 'os_clean_app_data_v2_backup';
     const STORAGE_KEY_VERSIONS = 'os_clean_versions_v2';
     const STORAGE_KEY_LAYOUT = 'os_clean_layout_v2';
-    const STORAGE_KEY_CLOUD = 'os_clean_cloud_config_v1';
-
-    // 內建提供給使用者貼到 Google Apps Script 的後端程式碼範本
-    const GAS_SCRIPT_TEMPLATE = `// Google 試算表雲端資料庫轉接腳本 (支援無限長度資料分塊儲存與歷史快照)
-function doGet(e) {
-  return handleRequest(e);
-}
-
-function doPost(e) {
-  return handleRequest(e);
-}
-
-function handleRequest(e) {
-  var lock = LockService.getScriptLock();
-  lock.tryLock(10000);
-  try {
-    var params = e.parameter || {};
-    var body = {};
-    if (e.postData && e.postData.contents) {
-      try { body = JSON.parse(e.postData.contents); } catch (err) {}
-    }
-    var action = body.action || params.action || 'get';
-    var token = String(body.token || params.token || '');
-
-    var ss = SpreadsheetApp.getActiveSpreadsheet();
-    var sheet = ss.getSheetByName('OS_Cloud_Store');
-    if (!sheet) {
-      sheet = ss.insertSheet('OS_Cloud_Store');
-      sheet.getRange(1, 1, 1, 4).setValues([['Key', 'UpdatedAt', 'Token', 'Chunks_JSON']]);
-    }
-
-    var savedToken = String(sheet.getRange(2, 3).getValue() || '');
-    if (savedToken && savedToken !== token) {
-      return jsonResponse({ ok: false, error: '同步通行碼不一致，請確認設定' });
-    }
-
-    if (action === 'save') {
-      var payloadStr = JSON.stringify({
-        appData: body.appData || null,
-        versions: body.versions || [],
-        updatedAt: body.updatedAt || Date.now()
-      });
-      // Google 試算表單一儲存格上限為 50,000 字元，自動以 40,000 字元分塊寫入，突破容量限制
-      var chunkSize = 40000;
-      var chunks = [];
-      for (var i = 0; i < payloadStr.length; i += chunkSize) {
-        chunks.push(payloadStr.substring(i, i + chunkSize));
-      }
-      sheet.getRange(2, 1, 1, 3).setValues([['MAIN_STATE', new Date().toISOString(), token]]);
-      var maxCols = sheet.getMaxColumns();
-      if (maxCols > 3) {
-        sheet.getRange(2, 4, 1, maxCols - 3).clearContent();
-      }
-      if (chunks.length > 0) {
-        sheet.getRange(2, 4, 1, chunks.length).setValues([chunks]);
-      }
-      return jsonResponse({ ok: true, updatedAt: body.updatedAt || Date.now() });
-    } else {
-      var lastCol = sheet.getLastColumn();
-      if (lastCol < 4) {
-        return jsonResponse({ ok: true, empty: true });
-      }
-      var rowVals = sheet.getRange(2, 4, 1, lastCol - 3).getValues()[0];
-      var fullStr = rowVals.join('');
-      if (!fullStr) {
-        return jsonResponse({ ok: true, empty: true });
-      }
-      var parsed = JSON.parse(fullStr);
-      return jsonResponse({ ok: true, data: parsed });
-    }
-  } catch (err) {
-    return jsonResponse({ ok: false, error: String(err) });
-  } finally {
-    lock.releaseLock();
-  }
-}
-
-function jsonResponse(obj) {
-  return ContentService.createTextOutput(JSON.stringify(obj))
-    .setMimeType(ContentService.MimeType.JSON);
-}`;
 
     // 嚴格驗證與自動修復資料結構，確保任何匯入或歷史資料都不會導致程式崩潰
     function normalizeAppData(raw) {
@@ -960,7 +812,7 @@ function jsonResponse(obj) {
       data.headerTitle3 = String(data.headerTitle3 || fallback.headerTitle3);
       data.currentFilterTag = String(data.currentFilterTag || 'ALL');
 
-      // 修復類別
+      // 修復類別（完整保留匯入或已存的顏色、Emoji 圖示與名稱）
       if (!Array.isArray(data.categories) || data.categories.length === 0) {
         data.categories = cloneData(DEFAULT_CATEGORIES);
       } else {
@@ -969,7 +821,7 @@ function jsonResponse(obj) {
           .filter(c => c && typeof c === 'object' && String(c.name || '').trim())
           .map(c => ({
             name: String(c.name).trim(),
-            icon: String(c.icon || '🏷️').trim(),
+            icon: c.icon !== undefined && c.icon !== null ? String(c.icon).trim() : '🏷️',
             color: COLOR_PALETTE[c.color] ? c.color : 'slate'
           }))
           .filter(c => {
@@ -1110,15 +962,45 @@ function jsonResponse(obj) {
           }))
         : [];
 
+      // 若匯入的週次、任務池或歷史歸檔中含有尚未建立在 categories 裡的標籤，自動補齊至類別清單以確保篩選與顯示完整
+      const existingCatNames = new Set(data.categories.map(c => c.name));
+      const defaultCatMap = {
+        '緊急': { icon: '🔥', color: 'rose' },
+        '永平': { icon: '🌱', color: 'emerald' },
+        '少契': { icon: '🎈', color: 'sky' },
+        '大專': { icon: '🎓', color: 'purple' },
+        '畢契': { icon: '💼', color: 'amber' },
+        '傳道': { icon: '✝️', color: 'indigo' },
+        '工作': { icon: '💼', color: 'indigo' },
+        '專案': { icon: '🚀', color: 'emerald' },
+        '學習': { icon: '📚', color: 'purple' },
+        '生活': { icon: '🌱', color: 'amber' },
+        '其他': { icon: '📎', color: 'slate' }
+      };
+      const collectTag = (tag) => {
+        const t = String(tag || '').trim();
+        if (t && !existingCatNames.has(t)) {
+          existingCatNames.add(t);
+          const preset = defaultCatMap[t] || { icon: '🏷️', color: 'slate' };
+          data.categories.push({ name: t, icon: preset.icon, color: preset.color });
+        }
+      };
+      data.weeks.forEach(w => {
+        w.events.forEach(e => collectTag(e.tag));
+        w.tasks.forEach(t => collectTag(t.tag));
+      });
+      data.backlog.forEach(b => collectTag(b.tag));
+      data.history.forEach(h => {
+        h.events.forEach(e => collectTag(e.tag));
+        h.tasks.forEach(t => collectTag(t.tag));
+      });
+
       return data;
     }
 
     let appData = loadDataSyncFallback();
     let cachedVersions = [];
     let layoutData = loadLayout();
-    let cloudConfig = loadCloudConfig();
-    let cloudSyncTimer = null;
-    let isCloudSyncing = false;
     let currentTab = 'rolling';
     let editingItemInfo = null;
     let selectedNewCatColor = 'indigo';
@@ -1126,250 +1008,6 @@ function jsonResponse(obj) {
     let stateHistory = [JSON.stringify(appData)];
     let currentStateIndex = 0;
     const MAX_HISTORY = 40;
-
-    function loadCloudConfig() {
-      const raw = safeLocalGet(STORAGE_KEY_CLOUD);
-      const def = { url: '', token: '', autoSync: true, lastSyncTime: null };
-      if (raw) {
-        try { return { ...def, ...JSON.parse(raw) }; } catch (e) {}
-      }
-      return def;
-    }
-
-    function saveCloudConfig() {
-      safeLocalSet(STORAGE_KEY_CLOUD, JSON.stringify(cloudConfig));
-      idbSet(STORAGE_KEY_CLOUD, cloneData(cloudConfig));
-      updateCloudStatusUI();
-    }
-
-    function updateCloudStatusUI(state = null, customText = null) {
-      const dot = document.getElementById('cloud-status-dot');
-      const text = document.getElementById('cloud-status-text');
-      const modalBadge = document.getElementById('modal-cloud-status-badge');
-      const modalLastSync = document.getElementById('modal-cloud-last-sync');
-
-      const hasUrl = Boolean(cloudConfig && cloudConfig.url && cloudConfig.url.trim());
-
-      if (!hasUrl) {
-        if (dot) dot.className = 'w-2 h-2 rounded-full bg-slate-500';
-        if (text) text.textContent = '☁️ 雲端同步';
-        if (modalBadge) {
-          modalBadge.className = 'px-2 py-0.5 rounded-full text-[11px] bg-slate-200 text-slate-700 font-semibold';
-          modalBadge.textContent = '未綁定';
-        }
-        return;
-      }
-
-      if (state === 'syncing') {
-        if (dot) dot.className = 'w-2 h-2 rounded-full bg-amber-400 animate-ping';
-        if (text) text.textContent = customText || '☁️ 同步中...';
-        if (modalBadge) {
-          modalBadge.className = 'px-2 py-0.5 rounded-full text-[11px] bg-amber-100 text-amber-800 font-semibold';
-          modalBadge.textContent = '🔄 同步處理中...';
-        }
-      } else if (state === 'error') {
-        if (dot) dot.className = 'w-2 h-2 rounded-full bg-rose-500';
-        if (text) text.textContent = '☁️ 同步異常';
-        if (modalBadge) {
-          modalBadge.className = 'px-2 py-0.5 rounded-full text-[11px] bg-rose-100 text-rose-700 font-semibold';
-          modalBadge.textContent = '⚠️ 連線或權限異常';
-        }
-      } else {
-        if (dot) dot.className = 'w-2 h-2 rounded-full bg-emerald-400';
-        if (text) text.textContent = '☁️ 已同步';
-        if (modalBadge) {
-          modalBadge.className = 'px-2 py-0.5 rounded-full text-[11px] bg-emerald-100 text-emerald-800 font-semibold';
-          modalBadge.textContent = '✅ 已連線綁定';
-        }
-      }
-
-      if (modalLastSync && cloudConfig.lastSyncTime) {
-        modalLastSync.textContent = `最近一次雲端同步：${cloudConfig.lastSyncTime}`;
-      }
-    }
-
-    function scheduleCloudUpload() {
-      if (!cloudConfig || !cloudConfig.url || !cloudConfig.autoSync) return;
-      if (cloudSyncTimer) clearTimeout(cloudSyncTimer);
-      updateCloudStatusUI('syncing', '☁️ 待上傳...');
-      cloudSyncTimer = setTimeout(() => {
-        syncToCloud(false);
-      }, 1200);
-    }
-
-    async function syncToCloud(manual = false) {
-      if (!cloudConfig || !cloudConfig.url) {
-        if (manual) showToast('請先填寫 Google Apps Script 網頁應用程式網址', 'error');
-        return false;
-      }
-      if (isCloudSyncing && !manual) return false;
-      isCloudSyncing = true;
-      updateCloudStatusUI('syncing', '☁️ 上傳中...');
-
-      try {
-        // 使用 text/plain 傳送 JSON 以避開瀏覽器對 Google Apps Script 的 CORS 預檢 (OPTIONS) 阻擋
-        const res = await fetch(cloudConfig.url.trim(), {
-          method: 'POST',
-          headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-          body: JSON.stringify({
-            action: 'save',
-            token: cloudConfig.token || '',
-            updatedAt: appData._updatedAt || Date.now(),
-            appData: appData,
-            versions: cachedVersions
-          })
-        });
-        const result = await res.json();
-        if (result && result.ok) {
-          cloudConfig.lastSyncTime = new Date().toLocaleString();
-          saveCloudConfig();
-          updateCloudStatusUI('ok');
-          if (manual) showToast('✅ 已成功將最新資料上傳至 Google 雲端試算表！');
-          return true;
-        } else {
-          throw new Error(result?.error || '雲端回傳錯誤');
-        }
-      } catch (err) {
-        console.warn('Cloud upload failed:', err);
-        updateCloudStatusUI('error');
-        if (manual) showToast(`雲端上傳失敗：${err.message || '請確認網址與部署權限是否設為所有人'}`, 'error');
-        return false;
-      } finally {
-        isCloudSyncing = false;
-      }
-    }
-
-    async function syncFromCloud(manual = false) {
-      if (!cloudConfig || !cloudConfig.url) {
-        if (manual) showToast('請先填寫 Google Apps Script 網頁應用程式網址', 'error');
-        return false;
-      }
-      isCloudSyncing = true;
-      updateCloudStatusUI('syncing', '☁️ 讀取中...');
-
-      try {
-        const res = await fetch(cloudConfig.url.trim(), {
-          method: 'POST',
-          headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-          body: JSON.stringify({
-            action: 'get',
-            token: cloudConfig.token || ''
-          })
-        });
-        const result = await res.json();
-        if (!result || !result.ok) {
-          throw new Error(result?.error || '讀取失敗');
-        }
-
-        if (result.empty || !result.data || !result.data.appData) {
-          // 若雲端試算表還是空的，自動把本機資料推上去初始化
-          isCloudSyncing = false;
-          if (manual) showToast('雲端試算表目前為空，正在將本機資料初始化上傳至雲端...', 'info');
-          return await syncToCloud(manual);
-        }
-
-        const remoteAppData = result.data.appData;
-        const remoteVersions = result.data.versions;
-        const remoteTime = remoteAppData._updatedAt || result.data.updatedAt || 0;
-        const localTime = appData._updatedAt || 0;
-
-        // 若為手動點擊讀取，或者雲端時間戳比本機更新，即採用雲端資料
-        if (manual || remoteTime >= localTime) {
-          appData = normalizeAppData(remoteAppData);
-          if (Array.isArray(remoteVersions) && remoteVersions.length > 0) {
-            cachedVersions = remoteVersions;
-            idbSet(STORAGE_KEY_VERSIONS, cloneData(cachedVersions));
-            safeLocalSet(STORAGE_KEY_VERSIONS, JSON.stringify(cachedVersions));
-          }
-          syncCurrentWeekByDeviceDate();
-          const serialized = JSON.stringify(appData);
-          stateHistory = [serialized];
-          currentStateIndex = 0;
-          idbSet(STORAGE_KEY_DATA, cloneData(appData));
-          idbSet(STORAGE_KEY_DATA_BACKUP, cloneData(appData));
-          safeLocalSet(STORAGE_KEY_DATA, serialized);
-          safeLocalSet(STORAGE_KEY_DATA_BACKUP, serialized);
-          renderAll();
-          updateUndoRedoButtons();
-          if (manual) showToast('✅ 已從 Google 雲端試算表同步最新資料！');
-        } else if (localTime > remoteTime && cloudConfig.autoSync) {
-          // 若本機離線修改過比較新，自動補上傳到雲端
-          isCloudSyncing = false;
-          await syncToCloud(false);
-        }
-
-        cloudConfig.lastSyncTime = new Date().toLocaleString();
-        saveCloudConfig();
-        updateCloudStatusUI('ok');
-        return true;
-      } catch (err) {
-        console.warn('Cloud fetch failed:', err);
-        updateCloudStatusUI('error');
-        if (manual) showToast(`雲端讀取失敗：${err.message || '請確認網址是否正確'}`, 'error');
-        return false;
-      } finally {
-        isCloudSyncing = false;
-      }
-    }
-
-    function openCloudSyncModal() {
-      const urlInput = document.getElementById('cloud-webhook-url');
-      const tokenInput = document.getElementById('cloud-secret-token');
-      const autoToggle = document.getElementById('cloud-auto-sync-toggle');
-      const codeArea = document.getElementById('gas-code-template');
-
-      if (urlInput) urlInput.value = cloudConfig.url || '';
-      if (tokenInput) tokenInput.value = cloudConfig.token || '';
-      if (autoToggle) autoToggle.checked = cloudConfig.autoSync !== false;
-      if (codeArea) codeArea.value = GAS_SCRIPT_TEMPLATE;
-
-      updateCloudStatusUI();
-      toggleModalUI('cloud-sync-modal', 'cloud-sync-modal-box', true);
-    }
-
-    function closeCloudSyncModal() {
-      toggleModalUI('cloud-sync-modal', 'cloud-sync-modal-box', false);
-    }
-
-    function saveCloudConfigAndSync() {
-      const url = (document.getElementById('cloud-webhook-url').value || '').trim();
-      const token = (document.getElementById('cloud-secret-token').value || '').trim();
-      const autoSync = document.getElementById('cloud-auto-sync-toggle').checked;
-
-      if (!url) {
-        showToast('請貼上 Google Apps Script 網頁應用程式網址', 'error');
-        return;
-      }
-      cloudConfig.url = url;
-      cloudConfig.token = token;
-      cloudConfig.autoSync = autoSync;
-      saveCloudConfig();
-      syncFromCloud(true);
-    }
-
-    function disconnectCloudSync() {
-      showConfirm('清除雲端同步設定', '確定要中斷與 Google 試算表的連結嗎？\n（中斷後資料仍會安全保存在本機與雲端試算表中，不會被刪除）', () => {
-        cloudConfig = { url: '', token: '', autoSync: true, lastSyncTime: null };
-        saveCloudConfig();
-        document.getElementById('cloud-webhook-url').value = '';
-        document.getElementById('cloud-secret-token').value = '';
-        updateCloudStatusUI();
-        showToast('已清除雲端同步連結', 'info');
-      });
-    }
-
-    function copyGasScriptCode() {
-      const textarea = document.getElementById('gas-code-template');
-      if (!textarea) return;
-      textarea.select();
-      textarea.setSelectionRange(0, 99999);
-      try {
-        document.execCommand('copy');
-        showToast('✅ 已複製 GAS 程式碼！請貼至 Google Apps Script 編輯器');
-      } catch (e) {
-        showToast('請手動全選下方黑框程式碼並按 Ctrl+C 複製', 'info');
-      }
-    }
 
     // 自動依據裝置當前日期同步「本週 (isCurrent)」標記
     function syncCurrentWeekByDeviceDate() {
@@ -1429,17 +1067,10 @@ function jsonResponse(obj) {
 
     async function initUnlimitedStorage() {
       try {
-        const [idbPrimary, idbBackup, idbCloud] = await Promise.all([
+        const [idbPrimary, idbBackup] = await Promise.all([
           idbGet(STORAGE_KEY_DATA),
-          idbGet(STORAGE_KEY_DATA_BACKUP),
-          idbGet(STORAGE_KEY_CLOUD)
+          idbGet(STORAGE_KEY_DATA_BACKUP)
         ]);
-
-        if (idbCloud && idbCloud.url && !cloudConfig.url) {
-          cloudConfig = { ...cloudConfig, ...idbCloud };
-          safeLocalSet(STORAGE_KEY_CLOUD, JSON.stringify(cloudConfig));
-        }
-        updateCloudStatusUI();
 
         // 比較 IndexedDB 與 LocalStorage 的時間戳，採用最新且完整的一份
         const validCandidates = [idbPrimary, idbBackup, appData].filter(d => d && typeof d === 'object' && Array.isArray(d.weeks));
@@ -1467,11 +1098,6 @@ function jsonResponse(obj) {
         currentStateIndex = 0;
         renderAll();
         updateUndoRedoButtons();
-
-        // 若已設定 Google 雲端網址且開啟自動同步，啟動時自動向 Google 試算表拉取最新資料
-        if (cloudConfig && cloudConfig.url && cloudConfig.autoSync) {
-          syncFromCloud(false);
-        }
       } catch (err) {
         console.warn('IndexedDB fallback active:', err);
       }
@@ -1524,17 +1150,41 @@ function jsonResponse(obj) {
       applyToolbarState();
     }
 
+    function formatShortMonthDay(dateStr) {
+      if (!dateStr || typeof dateStr !== 'string') return '';
+      const d = parseDateStrToObj(dateStr);
+      if (d) {
+        const m = String(d.getMonth() + 1).padStart(2, '0');
+        const day = String(d.getDate()).padStart(2, '0');
+        return `${m}/${day}`;
+      }
+      const parts = dateStr.trim().split(/[\/\-]/);
+      if (parts.length === 3) {
+        return `${parts[1].padStart(2, '0')}/${parts[2].padStart(2, '0')}`;
+      }
+      return dateStr;
+    }
+
     function updateCurrentWeekBadge() {
       const cw = appData.weeks.find(w => w.isCurrent);
       const badgeEl = document.getElementById('current-week-badge-text');
-      if (!badgeEl) return;
+      const badgeShortEl = document.getElementById('current-week-badge-text-short');
+      let fullText = '';
+      let shortText = '';
+
       if (cw) {
-        badgeEl.textContent = `W${cw.weekNum} (${cw.date})`;
+        fullText = `W${cw.weekNum} (${cw.date})`;
+        shortText = `W${cw.weekNum} (${formatShortMonthDay(cw.date)})`;
       } else {
         const todayMon = getMondayOfDate(new Date());
         const wNum = getISOWeekNumber(todayMon);
-        badgeEl.textContent = `W${wNum} (${formatDateYMD(todayMon)})`;
+        const fullDateStr = formatDateYMD(todayMon);
+        fullText = `W${wNum} (${fullDateStr})`;
+        shortText = `W${wNum} (${formatShortMonthDay(fullDateStr)})`;
       }
+
+      if (badgeEl) badgeEl.textContent = fullText;
+      if (badgeShortEl) badgeShortEl.textContent = shortText;
     }
 
     function jumpToCurrentWeek() {
@@ -1659,10 +1309,6 @@ function jsonResponse(obj) {
       updateBacklogBadge();
       updateUndoRedoButtons();
       updateCurrentWeekBadge();
-
-      if (!skipHistory) {
-        scheduleCloudUpload();
-      }
     }
 
     function undo() {
@@ -1670,7 +1316,6 @@ function jsonResponse(obj) {
         currentStateIndex--;
         appData = normalizeAppData(JSON.parse(stateHistory[currentStateIndex]));
         saveData(true);
-        scheduleCloudUpload();
         renderAll();
         showToast('已還原上一步');
       }
@@ -1681,7 +1326,6 @@ function jsonResponse(obj) {
         currentStateIndex++;
         appData = normalizeAppData(JSON.parse(stateHistory[currentStateIndex]));
         saveData(true);
-        scheduleCloudUpload();
         renderAll();
         showToast('已重做');
       }
@@ -1694,11 +1338,15 @@ function jsonResponse(obj) {
       if (btnRedo) btnRedo.disabled = currentStateIndex >= stateHistory.length - 1;
     }
 
-    // 匯出檔案名稱與裝置本地日期完全相同 (例如：2026-10-16.json)
+    // 匯出檔案名稱與裝置本地日期完全相同 (例如：2026-10-16.json)，並確保完整包含 categories (名稱、顏色、Emoji)
     function exportData() {
       try {
         const deviceDateStr = getDeviceDateString('-');
-        const jsonStr = JSON.stringify(appData, null, 2);
+        const exportPayload = {
+          ...cloneData(appData),
+          categories: cloneData(appData.categories || DEFAULT_CATEGORIES)
+        };
+        const jsonStr = JSON.stringify(exportPayload, null, 2);
         const blob = new Blob([jsonStr], { type: 'application/json;charset=utf-8' });
         const url = URL.createObjectURL(blob);
         const dlAnchor = document.createElement('a');
@@ -1708,7 +1356,7 @@ function jsonResponse(obj) {
         dlAnchor.click();
         dlAnchor.remove();
         setTimeout(() => URL.revokeObjectURL(url), 1000);
-        showToast(`備份檔案 (${deviceDateStr}.json) 已匯出下載`, 'info');
+        showToast(`備份檔案 (${deviceDateStr}.json) 已匯出（含自訂類別設定）`, 'info');
       } catch (err) {
         showToast('匯出失敗，請重試', 'error');
       }
@@ -1729,13 +1377,17 @@ function jsonResponse(obj) {
       reader.onload = (e) => {
         try {
           const parsed = JSON.parse(e.target.result);
-          // 支援匯入直接匯出的資料檔，或包在 { data: ... } 內的快照結構
-          const imported = (parsed && parsed.data && Array.isArray(parsed.data.weeks)) ? parsed.data : parsed;
-          if (!imported || (!Array.isArray(imported.weeks) && !Array.isArray(imported.backlog))) {
+          // 支援匯入直接匯出的資料檔，或包在 { data: ... } / { appData: ... } 內的快照結構
+          const imported = (parsed && parsed.data && Array.isArray(parsed.data.weeks))
+            ? parsed.data
+            : (parsed && parsed.appData && Array.isArray(parsed.appData.weeks))
+              ? parsed.appData
+              : parsed;
+          if (!imported || (!Array.isArray(imported.weeks) && !Array.isArray(imported.backlog) && !Array.isArray(imported.categories))) {
             showToast('檔案格式不正確，請選擇有效的備份 JSON 檔', 'error');
             return;
           }
-          showConfirm('匯入資料確認', `確定要匯入「${file.name}」嗎？\n匯入前系統會自動為您建立一份當前狀態的歷史快照，並支援 ↩️ 還原上一步。`, () => {
+          showConfirm('匯入資料確認', `確定要匯入「${file.name}」嗎？\n將完整匯入所有週次、任務與「自訂類別（含顏色、Emoji）」。匯入前系統會自動為您建立一份當前狀態的歷史快照。`, () => {
             // 匯入前自動拍下快照保護舊資料
             const autoVersions = getSavedVersions();
             autoVersions.unshift({
@@ -1750,7 +1402,8 @@ function jsonResponse(obj) {
             syncCurrentWeekByDeviceDate();
             saveData();
             renderAll();
-            showToast('✅ 資料匯入成功！（已自動備份原狀態至歷史版本）');
+            populateCategorySelects();
+            showToast('✅ 資料與自訂類別匯入成功！');
           });
         } catch (err) {
           showToast('讀取 JSON 檔案失敗，請確認檔案格式', 'error');
@@ -1767,7 +1420,6 @@ function jsonResponse(obj) {
       cachedVersions = versions;
       idbSet(STORAGE_KEY_VERSIONS, cloneData(versions));
       safeLocalSet(STORAGE_KEY_VERSIONS, JSON.stringify(versions));
-      scheduleCloudUpload();
     }
 
     function openSaveVersionModal() {
@@ -3023,9 +2675,6 @@ function jsonResponse(obj) {
       if (syncCurrentWeekByDeviceDate()) {
         saveData(true);
         renderAll();
-      }
-      if (cloudConfig && cloudConfig.url && cloudConfig.autoSync && !isCloudSyncing) {
-        syncFromCloud(false);
       }
     });
 
