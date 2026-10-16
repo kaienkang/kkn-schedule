@@ -4,7 +4,6 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
   <title>2026 個人事工與任務總控系統 OS</title>
-  <!-- iPhone / iOS 與 Android 桌面 App (PWA) 專屬設定 -->
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <meta name="apple-mobile-web-app-title" content="事工總控OS">
@@ -15,56 +14,33 @@
   <script src="https://cdn.tailwindcss.com"></script>
   <style>
     @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;600;700&display=swap');
-    :root {
-      --backlog-w: 384px;
-      --col1-w: 130px;
-      --col2-w: 350px;
-    }
-    body {
-      font-family: 'Noto Sans TC', sans-serif;
-      background-color: #f8fafc;
-      color: #1e293b;
-      padding-bottom: env(safe-area-inset-bottom);
-      -webkit-tap-highlight-color: transparent;
-    }
-    header {
-      padding-top: env(safe-area-inset-top);
-    }
+    :root { --backlog-w: 384px; --col1-w: 130px; --col2-w: 350px; }
+    body { font-family: 'Noto Sans TC', sans-serif; background-color: #f8fafc; color: #1e293b; padding-bottom: env(safe-area-inset-bottom); -webkit-tap-highlight-color: transparent; }
+    header { padding-top: env(safe-area-inset-top); }
     .custom-scroll::-webkit-scrollbar { width: 6px; height: 6px; }
     .custom-scroll::-webkit-scrollbar-track { background: #f1f5f9; }
     .custom-scroll::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 3px; }
     .custom-scroll::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
     .tag-badge { font-size: 0.72rem; padding: 1px 7px; border-radius: 9999px; font-weight: 600; display: inline-block; }
-
     .drag-over { background-color: #eef2ff !important; border-radius: 0.5rem; border: 2px dashed #a5b4fc !important; }
     .border-t-amber-500 { border-top-color: #f59e0b !important; border-top-width: 2px !important; }
     [draggable="true"] { cursor: grab; }
     [draggable="true"]:active { cursor: grabbing; }
-
-    .resizer-y {
-      width: 4px; cursor: col-resize; background-color: transparent; transition: background-color 0.2s; position: relative; z-index: 20;
-    }
+    .resizer-y { width: 4px; cursor: col-resize; background-color: transparent; transition: background-color 0.2s; position: relative; z-index: 20; }
     .resizer-y::after { content: ''; position: absolute; left: -6px; right: -6px; top: 0; bottom: 0; }
     .resizer-y:hover, .resizer-y.active { background-color: #94a3b8; }
-
     .fade-in { animation: fadeIn 0.2s ease-out forwards; }
     .fade-out { animation: fadeOut 0.2s ease-in forwards; }
     @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
     @keyframes fadeOut { from { opacity: 1; transform: translateY(0); } to { opacity: 0; transform: translateY(10px); } }
-
-    @keyframes pulseHighlight {
-      0%, 100% { box-shadow: 0 0 0 0 rgba(245, 158, 11, 0); }
-      50% { box-shadow: 0 0 0 6px rgba(245, 158, 11, 0.45); }
-    }
+    @keyframes pulseHighlight { 0%, 100% { box-shadow: 0 0 0 0 rgba(245, 158, 11, 0); } 50% { box-shadow: 0 0 0 6px rgba(245, 158, 11, 0.45); } }
     .jump-highlight { animation: pulseHighlight 1.2s ease-in-out 2; }
-
     .hide-drawer { display: none !important; }
   </style>
 </head>
 <body class="min-h-screen flex flex-col relative overflow-x-hidden">
 
   <header class="bg-slate-900 text-white shadow-md sticky top-0 z-30">
-    <!-- 第一排：標題資訊 + 右上角「當前基準」與「收合工具列按鈕」 -->
     <div class="max-w-[1600px] mx-auto px-3 sm:px-4 py-2.5 flex items-center justify-between gap-2">
       <div class="flex items-center gap-2 sm:gap-3 min-w-0">
         <span id="edit-header-1" contenteditable="true" onblur="saveHeaderData()" onkeydown="handleHeaderKeyDown(event)" class="bg-amber-500 text-slate-950 font-bold px-2 py-1 rounded text-xs sm:text-sm tracking-wide hover:bg-amber-400 cursor-text outline-none transition shrink-0">2026 OS</span>
@@ -76,7 +52,6 @@
         </div>
       </div>
 
-      <!-- 右上角：當前基準 (點擊跳至當週) + 收合/展開工具列 -->
       <div class="flex items-center gap-1.5 sm:gap-2 shrink-0">
         <button onclick="jumpToCurrentWeek()" title="點擊直接跳至本週進度" class="text-[11px] sm:text-xs font-medium bg-slate-800 hover:bg-amber-500/20 text-amber-300 hover:text-amber-200 px-2 sm:px-2.5 py-1.5 rounded-lg border border-amber-500/40 transition flex items-center gap-1 shadow-sm cursor-pointer">
           <span class="hidden sm:inline">📍 當前基準：</span>
@@ -91,35 +66,29 @@
       </div>
     </div>
 
-    <!-- 第二排：可收合的整合工具列 + 連結列 -->
     <div id="collapsible-toolbar-wrapper" class="border-t border-slate-800 bg-slate-900/95 transition-all">
       <div class="max-w-[1600px] mx-auto px-3 sm:px-4 py-2 flex items-center justify-between gap-2 overflow-x-auto custom-scroll whitespace-nowrap">
         <div class="flex items-center gap-1.5 sm:gap-2 text-xs">
-          <!-- 分頁切換：📅 滾動週任務表 📦 歷史歸檔 -->
           <div class="flex items-center gap-1 bg-slate-800 p-1 rounded-lg border border-slate-700/80">
-            <button onclick="switchTab('rolling')" id="tab-rolling" class="tab-btn bg-amber-500 text-slate-950 font-bold px-2.5 sm:px-3 py-1 rounded-md transition">📅 滾動週任務表</button>
-            <button onclick="switchTab('history')" id="tab-history" class="tab-btn text-slate-300 hover:text-white px-2.5 sm:px-3 py-1 rounded-md transition">📦 歷史歸檔</button>
+            <button onclick="switchTab('rolling')" id="tab-rolling" class="tab-btn bg-amber-500 text-slate-950 font-bold px-2.5 sm:px-3 py-1 rounded-md transition">📅 任務表</button>
+            <button onclick="switchTab('history')" id="tab-history" class="tab-btn text-slate-300 hover:text-white px-2.5 sm:px-3 py-1 rounded-md transition">📦 歸檔</button>
           </div>
 
-          <!-- Undo / Redo：↩️↪️ -->
           <div class="flex items-center bg-slate-800 rounded-md border border-slate-700 overflow-hidden shadow-sm">
             <button id="btn-undo" onclick="undo()" title="還原上一步 (Undo)" class="px-2.5 py-1.5 text-slate-300 hover:text-white hover:bg-slate-700 transition disabled:opacity-30 disabled:cursor-not-allowed">↩️</button>
             <div class="w-px h-3.5 bg-slate-600"></div>
             <button id="btn-redo" onclick="redo()" title="重做 (Redo)" class="px-2.5 py-1.5 text-slate-300 hover:text-white hover:bg-slate-700 transition disabled:opacity-30 disabled:cursor-not-allowed">↪️</button>
           </div>
 
-          <!-- ➕ 新增 -->
           <button onclick="openAddModal()" class="bg-emerald-600 hover:bg-emerald-500 text-white font-semibold px-2.5 sm:px-3 py-1.5 rounded-md shadow flex items-center gap-1 transition">
             <span>➕ 新增</span>
           </button>
 
-          <!-- 📌 任務池 -->
           <button id="btn-toggle-backlog" onclick="toggleBacklogDrawer()" class="bg-indigo-600 hover:bg-indigo-500 text-white font-semibold px-2.5 sm:px-3 py-1.5 rounded-md shadow flex items-center gap-1 transition text-xs shrink-0">
             <span>📌 任務池</span>
             <span id="backlog-count-badge" class="bg-indigo-900 text-indigo-200 px-1.5 py-0.2 rounded-full text-[11px]">0</span>
           </button>
 
-          <!-- 💾 儲存 / 🕒 歷史 -->
           <button onclick="openSaveVersionModal()" title="儲存當前狀態為一個版本" class="bg-teal-600 hover:bg-teal-500 text-white font-semibold px-2.5 sm:px-3 py-1.5 rounded-md shadow flex items-center gap-1 transition">
             <span>💾 儲存</span>
           </button>
@@ -127,24 +96,21 @@
             <span>🕒 歷史</span>
           </button>
 
-          <!-- ⬇️ 匯出 / ⬆️ 匯入 -->
-          <button onclick="exportData()" title="匯出 JSON 備份檔案 (含所有類別、顏色與圖示，檔名同裝置日期)" class="bg-slate-800 hover:bg-slate-700 text-slate-200 px-2.5 py-1.5 rounded-md border border-slate-700 transition flex items-center gap-1">
+          <button onclick="exportData()" title="匯出 JSON 備份檔案" class="bg-slate-800 hover:bg-slate-700 text-slate-200 px-2.5 py-1.5 rounded-md border border-slate-700 transition flex items-center gap-1">
             <span>⬇️ 匯出</span>
           </button>
-          <button onclick="triggerImportData()" title="從 JSON 備份檔案匯入資料與類別設定" class="bg-slate-800 hover:bg-slate-700 text-slate-200 px-2.5 py-1.5 rounded-md border border-slate-700 transition flex items-center gap-1">
+          <button onclick="triggerImportData()" title="從 JSON 備份檔案匯入" class="bg-slate-800 hover:bg-slate-700 text-slate-200 px-2.5 py-1.5 rounded-md border border-slate-700 transition flex items-center gap-1">
             <span>⬆️ 匯入</span>
           </button>
           <input type="file" id="import-file-input" accept=".json,application/json" class="hidden" onchange="handleImportFile(event)">
         </div>
       </div>
 
-      <!-- 連結列 -->
       <div class="bg-slate-800/90 border-t border-slate-700/80 px-3 sm:px-4 py-1.5 text-xs">
         <div class="max-w-[1600px] mx-auto flex items-center gap-2 overflow-x-auto custom-scroll whitespace-nowrap">
           <span class="text-amber-400 font-semibold shrink-0 flex items-center gap-1">
             🔗 連結
-            <button onclick="openBookmarkModal()" class="text-amber-200 hover:text-white bg-slate-700 hover:bg-slate-600 rounded px-1.5 py-0.5 transition font-bold" title="新增連結">＋</button>
-            ：
+            <button onclick="openBookmarkModal()" class="text-amber-200 hover:text-white bg-slate-700 hover:bg-slate-600 rounded px-1.5 py-0.5 transition font-bold" title="新增連結">＋</button>：
           </span>
           <div id="bookmark-list-container" class="flex items-center gap-2"></div>
         </div>
@@ -154,11 +120,11 @@
 
   <div class="flex-1 max-w-[1600px] w-full mx-auto px-3 sm:px-4 py-4 flex gap-2 sm:gap-4 relative items-start">
 
-    <!-- TAB 1: 滾動週任務表 -->
+    <!-- TAB 1: 任務表 -->
     <main id="view-rolling" class="flex-1 min-w-0">
       <div class="bg-white p-3 rounded-xl shadow-sm border border-slate-200 mb-4 flex flex-wrap items-center justify-between gap-3">
         <div class="flex items-center gap-1.5 flex-wrap">
-          <span class="text-xs font-bold text-slate-500 mr-1">類別篩選：</span>
+          <span class="text-xs font-bold text-slate-500 mr-1">類別篩選(可複選)：</span>
           <div id="filter-chips-container" class="flex items-center gap-1.5 flex-wrap"></div>
           <button onclick="openCategoryManagerModal()" class="text-xs bg-slate-100 hover:bg-slate-200 text-slate-700 border border-slate-300 px-2.5 py-1 rounded-full font-medium transition flex items-center gap-1 ml-1" title="新增、命名、選色或刪除類別">
             <span>⚙️ 管理類別</span>
@@ -189,12 +155,12 @@
       </div>
     </main>
 
-    <!-- TAB 2: 歷史歸檔 -->
+    <!-- TAB 2: 歸檔 -->
     <main id="view-history" class="flex-1 min-w-0 hidden">
       <div class="bg-white p-4 rounded-xl shadow-sm border border-slate-200 mb-4 flex flex-wrap items-center justify-between gap-2">
         <div>
           <h2 class="text-lg font-bold text-slate-800">📦 歷史週次歸檔庫</h2>
-          <p class="text-[11px] text-slate-500 mt-1">點擊項目可查看或修改詳細備註；點擊「↩️ 復原此週」可將該週退回滾動週任務表（若為當週會自動恢復為當前基準）。</p>
+          <p class="text-[11px] text-slate-500 mt-1">點擊項目可查看或修改備註；點擊「↩️ 復原此週」可退回任務表（若為當週會自動恢復為當前基準）。</p>
         </div>
         <input type="text" id="history-search" oninput="renderHistory()" placeholder="搜尋歷史紀錄..." class="text-xs border border-slate-300 rounded-lg px-3 py-1.5 w-full sm:w-64">
       </div>
@@ -212,7 +178,6 @@
         </div>
         <button onclick="toggleBacklogDrawer()" class="text-slate-400 hover:text-slate-600 text-sm px-1">✕</button>
       </div>
-
       <div id="backlog-list-container" class="flex-1 overflow-y-auto custom-scroll space-y-4 pr-1"></div>
     </aside>
 
@@ -239,13 +204,12 @@
         <h3 class="font-bold text-base text-slate-800">⚙️ 管理工作項目類別</h3>
         <button onclick="closeCategoryManagerModal()" class="text-slate-400 hover:text-slate-600">✕</button>
       </div>
-
       <div class="space-y-4 text-xs">
         <div class="bg-slate-50 p-3 rounded-xl border border-slate-200 space-y-2.5">
           <div class="font-bold text-slate-700">➕ 新增自訂類別</div>
           <div class="flex gap-2">
             <input type="text" id="new-cat-icon" placeholder="圖示(如 🚀)" class="w-20 border border-slate-300 rounded-lg px-2.5 py-1.5 bg-white text-center">
-            <input type="text" id="new-cat-name" placeholder="類別名稱 (必填，如：家庭、讀書)" class="flex-1 border border-slate-300 rounded-lg px-3 py-1.5 bg-white">
+            <input type="text" id="new-cat-name" placeholder="類別名稱 (必填，如：家庭、讀書)" onkeydown="if(event.key==='Enter'){event.preventDefault();addCustomCategory();}" class="flex-1 border border-slate-300 rounded-lg px-3 py-1.5 bg-white">
           </div>
           <div>
             <label class="text-[11px] text-slate-500 block mb-1">選擇標籤顏色：</label>
@@ -253,13 +217,11 @@
           </div>
           <button onclick="addCustomCategory()" class="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-2 rounded-lg shadow-sm transition">＋ 新增類別</button>
         </div>
-
         <div>
           <div class="font-bold text-slate-700 mb-2">目前現有類別（可改色或刪除）：</div>
           <div id="category-manager-list" class="space-y-1.5 max-h-60 overflow-y-auto custom-scroll pr-1"></div>
         </div>
       </div>
-
       <div class="flex justify-end mt-5 pt-3 border-t border-slate-200">
         <button onclick="closeCategoryManagerModal()" class="px-4 py-2 rounded-lg bg-slate-800 hover:bg-slate-700 text-white font-bold text-xs transition">完成</button>
       </div>
@@ -277,7 +239,7 @@
         <p class="text-xs text-slate-500">將當前的所有行程與排程拍下快照存檔（無容量上限），以便日後隨時還原。</p>
         <div>
           <label class="font-bold text-slate-700 block mb-1 text-xs">版本名稱 (必填)：</label>
-          <input type="text" id="version-name-input" class="w-full border border-slate-300 rounded-lg px-3 py-2">
+          <input type="text" id="version-name-input" onkeydown="if(event.key==='Enter'){event.preventDefault();confirmSaveVersion();}" class="w-full border border-slate-300 rounded-lg px-3 py-2">
         </div>
       </div>
       <div class="flex justify-end gap-2 mt-5 pt-3 border-t border-slate-200">
@@ -295,7 +257,7 @@
         <button onclick="closeVersionHistoryModal()" class="text-slate-400 hover:text-slate-600">✕</button>
       </div>
       <div class="bg-amber-50 text-amber-800 text-xs p-2 rounded-lg border border-amber-200 mb-3">
-        💡 點擊「載入」會將整個系統恢復至該儲存檔的狀態。載入前請確定當前的進度不需要保留。
+        💡 點擊「載入」會將整個系統恢復至該儲存檔的狀態。
       </div>
       <div id="version-history-list" class="space-y-2 max-h-[50vh] overflow-y-auto custom-scroll pr-1"></div>
     </div>
@@ -308,7 +270,7 @@
         <h3 class="font-bold text-base text-slate-800">🔗 新增常用連結</h3>
         <button onclick="closeBookmarkModal()" class="text-slate-400 hover:text-slate-600">✕</button>
       </div>
-      <div class="space-y-3 text-sm">
+      <div class="space-y-3 text-sm" onkeydown="if(event.key==='Enter'){event.preventDefault();submitBookmark();}">
         <div>
           <label class="font-bold text-slate-700 block mb-1 text-xs">顯示名稱 (必填)：</label>
           <input type="text" id="bookmark-name-input" placeholder="例如：專案雲端資料夾" class="w-full border border-slate-300 rounded-lg px-3 py-2">
@@ -325,9 +287,9 @@
     </div>
   </div>
 
-  <!-- Add Item Modal -->
+  <!-- Add Item Modal (支援 Enter 直接確認新增) -->
   <div id="add-modal" class="fixed inset-0 bg-slate-900/60 hidden items-center justify-center z-[70] p-4 opacity-0 transition-opacity duration-200" onclick="if(event.target === this) closeAddModal()">
-    <div class="bg-white rounded-2xl shadow-xl max-w-md w-full p-5 border border-slate-200 transform scale-95 transition-transform duration-200" id="add-modal-box">
+    <div class="bg-white rounded-2xl shadow-xl max-w-md w-full p-5 border border-slate-200 transform scale-95 transition-transform duration-200" id="add-modal-box" onkeydown="handleAddModalKeyDown(event)">
       <div class="flex items-center justify-between border-b border-slate-200 pb-3 mb-4">
         <h3 class="font-bold text-base text-slate-800">➕ 新增事件、任務或非緊急待辦</h3>
         <button onclick="closeAddModal()" class="text-slate-400 hover:text-slate-600">✕</button>
@@ -353,16 +315,15 @@
             <label class="font-bold text-slate-700 block mb-1 text-xs">目標週次：</label>
             <select id="modal-week-select" class="w-full border border-slate-300 rounded-lg px-3 py-2 bg-white text-xs"></select>
           </div>
-
           <div>
             <label class="font-bold text-slate-700 block mb-1 text-xs">項目類型：</label>
             <div class="grid grid-cols-2 gap-2">
               <label class="border border-slate-300 rounded-lg p-2 flex items-center gap-2 cursor-pointer has-[:checked]:border-amber-500 has-[:checked]:bg-amber-50 transition">
-                <input type="radio" name="modal-item-type" value="task" checked onchange="togglePrepOption()">
+                <input type="radio" name="modal-item-type" value="task" checked>
                 <span class="text-xs">⚡ 任務 / 動作</span>
               </label>
               <label class="border border-slate-300 rounded-lg p-2 flex items-center gap-2 cursor-pointer has-[:checked]:border-amber-500 has-[:checked]:bg-amber-50 transition">
-                <input type="radio" name="modal-item-type" value="event" onchange="togglePrepOption()">
+                <input type="radio" name="modal-item-type" value="event">
                 <span class="text-xs">📅 硬性事件 / 期限</span>
               </label>
             </div>
@@ -388,7 +349,7 @@
         </div>
 
         <div>
-          <label class="font-bold text-slate-700 block mb-1 text-xs">內容標題 (必填)：</label>
+          <label class="font-bold text-slate-700 block mb-1 text-xs">內容標題 (必填，按 Enter 可直接新增)：</label>
           <input type="text" id="modal-text-input" placeholder="例如：專案發表會、準備簡報..." class="w-full border border-slate-300 rounded-lg px-3 py-2">
         </div>
 
@@ -417,27 +378,23 @@
         <h3 class="font-bold text-base text-slate-800">✏️ 編輯項目細節</h3>
         <button onclick="closeEditModal()" class="text-slate-400 hover:text-slate-600">✕</button>
       </div>
-
       <div class="space-y-3 text-sm">
-        <div id="edit-modal-tag-group">
+        <div>
           <div class="flex items-center justify-between mb-1">
             <label class="font-bold text-slate-700 text-xs">項目類別標籤：</label>
             <button type="button" onclick="openCategoryManagerModal()" class="text-[11px] text-indigo-600 hover:underline">⚙️ 新增/管理類別</button>
           </div>
           <select id="edit-modal-tag" class="w-full border border-slate-300 rounded-lg px-3 py-2 bg-white text-xs"></select>
         </div>
-
         <div>
           <label class="font-bold text-slate-700 block mb-1 text-xs">內容標題 (必填)：</label>
-          <input type="text" id="edit-modal-text" class="w-full border border-slate-300 rounded-lg px-3 py-2">
+          <input type="text" id="edit-modal-text" onkeydown="if(event.key==='Enter'&&!event.isComposing){event.preventDefault();saveEditModal();}" class="w-full border border-slate-300 rounded-lg px-3 py-2">
         </div>
-
         <div>
           <label class="font-bold text-slate-700 block mb-1 text-xs">詳細說明 / 講稿 / 備註 (選填)：</label>
-          <textarea id="edit-modal-details" rows="5" placeholder="可在此輸入項目的詳細說明、講章重點或相關連結...&#10;(僅在點開時才會顯示)" class="w-full border border-slate-300 rounded-lg px-3 py-2 text-xs custom-scroll resize-y"></textarea>
+          <textarea id="edit-modal-details" rows="5" placeholder="可在此輸入項目的詳細說明、講章重點或相關連結..." class="w-full border border-slate-300 rounded-lg px-3 py-2 text-xs custom-scroll resize-y"></textarea>
         </div>
       </div>
-
       <div class="flex justify-end gap-2 mt-5 pt-3 border-t border-slate-200">
         <button onclick="closeEditModal()" class="px-4 py-2 rounded-lg border border-slate-300 text-slate-600 hover:bg-slate-100 text-xs transition">取消</button>
         <button onclick="saveEditModal()" class="px-4 py-2 rounded-lg bg-amber-500 hover:bg-amber-600 text-slate-900 font-bold text-xs shadow transition">儲存變更</button>
@@ -446,91 +403,41 @@
   </div>
 
   <script>
-    // HTML 跳脫與唯一 ID 工具，防止特殊字元破壞介面與資料結構
-    function escapeHtml(str) {
-      if (str === null || str === undefined) return '';
-      return String(str)
-        .replace(/&/g, '&amp;')
-        .replace(/</g, '&lt;')
-        .replace(/>/g, '&gt;')
-        .replace(/"/g, '&quot;')
-        .replace(/'/g, '&#39;');
-    }
+    const escapeHtml = s => s == null ? '' : String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
+    const genId = (p = 'id') => `${p}-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`;
+    const cloneData = o => { try { return JSON.parse(JSON.stringify(o)); } catch { return o; } };
 
-    function genId(prefix = 'id') {
-      return `${prefix}-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`;
-    }
-
-    function cloneData(obj) {
-      try {
-        return JSON.parse(JSON.stringify(obj));
-      } catch (e) {
-        console.error('Clone failed:', e);
-        return obj;
-      }
-    }
-
-    // 通用 Modal 開關控制
     function toggleModalUI(modalId, boxId, show) {
-      const modal = document.getElementById(modalId);
-      const box = document.getElementById(boxId);
-      if (!modal || !box) return;
+      const m = document.getElementById(modalId), b = document.getElementById(boxId);
+      if (!m || !b) return;
       if (show) {
-        modal.classList.remove('hidden');
-        modal.classList.add('flex');
-        void modal.offsetWidth;
-        modal.classList.remove('opacity-0');
-        box.classList.remove('scale-95');
+        m.classList.remove('hidden'); m.classList.add('flex'); void m.offsetWidth;
+        m.classList.remove('opacity-0'); b.classList.remove('scale-95');
       } else {
-        modal.classList.add('opacity-0');
-        box.classList.add('scale-95');
-        setTimeout(() => {
-          modal.classList.add('hidden');
-          modal.classList.remove('flex');
-        }, 200);
+        m.classList.add('opacity-0'); b.classList.add('scale-95');
+        setTimeout(() => { m.classList.add('hidden'); m.classList.remove('flex'); }, 200);
       }
     }
 
     function showToast(msg, type = 'success') {
-      const container = document.getElementById('toast-container');
-      if (!container) return;
-      const toast = document.createElement('div');
+      const c = document.getElementById('toast-container');
+      if (!c) return;
+      const t = document.createElement('div');
       const colors = { success: 'bg-emerald-600', error: 'bg-rose-600', info: 'bg-slate-800' };
       const icons = { success: '✅', error: '⚠️', info: 'ℹ️' };
-
-      toast.className = `${colors[type] || colors.info} text-white px-4 py-2 rounded shadow-lg text-sm font-medium fade-in pointer-events-auto flex items-center gap-2`;
-      const iconSpan = document.createElement('span');
-      iconSpan.textContent = icons[type] || icons.info;
-      const textSpan = document.createElement('span');
-      textSpan.textContent = msg;
-      toast.appendChild(iconSpan);
-      toast.appendChild(textSpan);
-      container.appendChild(toast);
-
-      setTimeout(() => {
-        toast.classList.replace('fade-in', 'fade-out');
-        setTimeout(() => toast.remove(), 200);
-      }, 3000);
+      t.className = `${colors[type] || colors.info} text-white px-4 py-2 rounded shadow-lg text-sm font-medium fade-in pointer-events-auto flex items-center gap-2`;
+      t.innerHTML = `<span>${icons[type] || 'ℹ️'}</span><span>${escapeHtml(msg)}</span>`;
+      c.appendChild(t);
+      setTimeout(() => { t.classList.replace('fade-in', 'fade-out'); setTimeout(() => t.remove(), 200); }, 3000);
     }
 
-    function showConfirm(title, message, onConfirmCallback) {
+    function showConfirm(title, message, onConfirm) {
       document.getElementById('confirm-title').textContent = title;
       document.getElementById('confirm-message').textContent = message;
       toggleModalUI('confirm-modal', 'confirm-modal-box', true);
-
-      const okBtn = document.getElementById('confirm-ok-btn');
-      const cancelBtn = document.getElementById('confirm-cancel-btn');
-
-      const cleanup = () => {
-        toggleModalUI('confirm-modal', 'confirm-modal-box', false);
-        okBtn.onclick = null;
-        cancelBtn.onclick = null;
-      };
-
-      okBtn.onclick = () => {
-        cleanup();
-        onConfirmCallback();
-      };
+      const okBtn = document.getElementById('confirm-ok-btn'), cancelBtn = document.getElementById('confirm-cancel-btn');
+      const cleanup = () => { toggleModalUI('confirm-modal', 'confirm-modal-box', false); okBtn.onclick = cancelBtn.onclick = null; };
+      okBtn.onclick = () => { cleanup(); onConfirm(); };
       cancelBtn.onclick = cleanup;
     }
 
@@ -559,27 +466,17 @@
     function getMondayOfDate(d) {
       const date = new Date(d.getFullYear(), d.getMonth(), d.getDate());
       const day = date.getDay();
-      const diff = day === 0 ? -6 : 1 - day;
-      date.setDate(date.getDate() + diff);
+      date.setDate(date.getDate() + (day === 0 ? -6 : 1 - day));
       date.setHours(0, 0, 0, 0);
       return date;
     }
 
-    function formatDateYMD(dateObj, sep = '/') {
-      const y = dateObj.getFullYear();
-      const m = String(dateObj.getMonth() + 1).padStart(2, '0');
-      const d = String(dateObj.getDate()).padStart(2, '0');
-      return `${y}${sep}${m}${sep}${d}`;
-    }
-
-    function getDeviceDateString(sep = '-') {
-      return formatDateYMD(new Date(), sep);
-    }
+    const formatDateYMD = (d, sep = '/') => `${d.getFullYear()}${sep}${String(d.getMonth() + 1).padStart(2, '0')}${sep}${String(d.getDate()).padStart(2, '0')}`;
+    const getDeviceDateString = (sep = '-') => formatDateYMD(new Date(), sep);
 
     function getISOWeekNumber(dateObj) {
       const d = new Date(Date.UTC(dateObj.getFullYear(), dateObj.getMonth(), dateObj.getDate()));
-      const dayNum = d.getUTCDay() || 7;
-      d.setUTCDate(d.getUTCDate() + 4 - dayNum);
+      d.setUTCDate(d.getUTCDate() + 4 - (d.getUTCDay() || 7));
       const yearStart = new Date(Date.UTC(d.getUTCFullYear(), 0, 1));
       return Math.ceil((((d - yearStart) / 86400000) + 1) / 7);
     }
@@ -592,8 +489,7 @@
         d.setHours(0, 0, 0, 0);
         return isNaN(d.getTime()) ? null : d;
       } else if (parts.length === 2) {
-        const nowY = new Date().getFullYear();
-        const d = new Date(nowY, parseInt(parts[0], 10) - 1, parseInt(parts[1], 10));
+        const d = new Date(new Date().getFullYear(), parseInt(parts[0], 10) - 1, parseInt(parts[1], 10));
         d.setHours(0, 0, 0, 0);
         return isNaN(d.getTime()) ? null : d;
       }
@@ -603,25 +499,17 @@
     function isWeekMatchingToday(weekObj) {
       if (!weekObj || weekObj.id === 'WPENDING') return false;
       const weekStart = parseDateStrToObj(weekObj.date);
-      if (!weekStart) return false;
-      const todayMonday = getMondayOfDate(new Date());
-      return weekStart.getTime() === todayMonday.getTime();
+      return weekStart ? weekStart.getTime() === getMondayOfDate(new Date()).getTime() : false;
     }
 
-    // 計算「新增下一季 / 補齊本季」所需的週數與按鈕說明
     function getNextQuarterStepInfo() {
       const realWeeks = (appData?.weeks || []).filter(w => w.id !== 'WPENDING');
-      if (realWeeks.length === 0) {
-        return { count: 13, isFill: false, targetWeekNum: 13 };
-      }
-      const lastWeek = realWeeks[realWeeks.length - 1];
-      const lastWeekNum = parseInt(lastWeek.weekNum, 10);
-      if (isNaN(lastWeekNum) || lastWeekNum <= 0) {
-        return { count: 13, isFill: false, targetWeekNum: 13 };
-      }
-      const remainder = lastWeekNum % 13;
-      if (remainder !== 0) {
-        const needed = 13 - remainder;
+      if (!realWeeks.length) return { count: 13, isFill: false, targetWeekNum: 13 };
+      const lastWeekNum = parseInt(realWeeks[realWeeks.length - 1].weekNum, 10);
+      if (isNaN(lastWeekNum) || lastWeekNum <= 0) return { count: 13, isFill: false, targetWeekNum: 13 };
+      const rem = lastWeekNum % 13;
+      if (rem !== 0) {
+        const needed = 13 - rem;
         return { count: needed, isFill: true, lastWeekNum, targetWeekNum: lastWeekNum + needed };
       }
       return { count: 13, isFill: false, lastWeekNum, targetWeekNum: (lastWeekNum >= 52 ? 13 : lastWeekNum + 13) };
@@ -630,23 +518,11 @@
     function generateInitialDemoData() {
       const todayMonday = getMondayOfDate(new Date());
       const demoWeeks = [];
-
       for (let offset = -1; offset <= 6; offset++) {
         const wDate = new Date(todayMonday);
         wDate.setDate(wDate.getDate() + offset * 7);
         const wNum = getISOWeekNumber(wDate);
-        const dateStr = formatDateYMD(wDate);
-        const isCurrent = (offset === 0);
-
-        const weekItem = {
-          id: `W${wNum}-${wDate.getFullYear()}-${offset}`,
-          weekNum: String(wNum),
-          date: dateStr,
-          isCurrent: isCurrent,
-          events: [],
-          tasks: []
-        };
-
+        const weekItem = { id: `W${wNum}-${wDate.getFullYear()}-${offset}`, weekNum: String(wNum), date: formatDateYMD(wDate), isCurrent: offset === 0, events: [], tasks: [] };
         if (offset === -1) {
           weekItem.events.push({ id: 'ev-demo-1', tag: '工作', text: '上週例行會議 (示範事件)', details: '點擊項目可編輯詳細備註或講稿' });
           weekItem.tasks.push({ id: 'tk-demo-1', tag: '專案', text: '整理上週會議記錄 (示範已完成任務)', details: '', done: true });
@@ -660,31 +536,17 @@
           weekItem.events.push({ id: 'ev-demo-3', tag: '學習', text: '下週讀書會 / 進修計畫', details: '' });
           weekItem.tasks.push({ id: 'tk-demo-4', tag: '學習', text: '[提前 1 週預備] 閱讀指定章節資料', details: '', done: false });
         }
-
         demoWeeks.push(weekItem);
       }
-
-      demoWeeks.push({
-        id: 'WPENDING',
-        weekNum: '待安排',
-        date: '遠期計畫',
-        isCurrent: false,
-        events: [
-          { id: 'ep-demo-1', tag: '生活', text: '年度休假 / 遠期規劃 (示範)', details: '尚未確定具體週次的遠期事件可暫放於此' }
-        ],
-        tasks: []
-      });
-
+      demoWeeks.push({ id: 'WPENDING', weekNum: '待安排', date: '遠期計畫', isCurrent: false, events: [{ id: 'ep-demo-1', tag: '生活', text: '年度休假 / 遠期規劃 (示範)', details: '' }], tasks: [] });
       const lastWDate = new Date(todayMonday);
       lastWDate.setDate(lastWDate.getDate() - 14);
-      const lastWNum = getISOWeekNumber(lastWDate);
-
       return {
         _updatedAt: Date.now(),
         headerTitle1: '2026 OS',
         headerTitle2: '個人事工與任務總控台',
         headerTitle3: '核心原則：聚焦重要策略，善用滾動週次管理進度',
-        currentFilterTag: 'ALL',
+        currentFilterTags: ['ALL'],
         categories: cloneData(DEFAULT_CATEGORIES),
         bookmarks: [
           { id: 'bm-demo-1', name: '常用雲端硬碟 (範例)', url: 'https://drive.google.com' },
@@ -692,308 +554,127 @@
         ],
         weeks: demoWeeks,
         backlog: [
-          { id: 'b-demo-1', priority: 'high', tag: '專案', text: '長期重要構想（可拖曳或點 ⬅️ 排入本週）', details: '非緊急但重要的事項可先放在任務池累積' },
+          { id: 'b-demo-1', priority: 'high', tag: '專案', text: '長期重要構想（可拖曳或點 ⬅️ 排入本週）', details: '' },
           { id: 'b-demo-2', priority: 'low', tag: '生活', text: '有空再處理的雜項清單', details: '' }
         ],
-        history: [
-          {
-            id: 'h-demo-1',
-            weekNum: String(lastWNum),
-            date: formatDateYMD(lastWDate),
-            events: [{ id: 'hev-demo-1', tag: '工作', text: '已歸檔的歷史事件範例', details: '' }],
-            tasks: [{ id: 'htk-demo-1', tag: '專案', text: '已歸檔的完成任務（點左側「復原此週」可還原）', details: '', done: true }],
-            summary: ''
-          }
-        ]
+        history: [{
+          id: 'h-demo-1', weekNum: String(getISOWeekNumber(lastWDate)), date: formatDateYMD(lastWDate),
+          events: [{ id: 'hev-demo-1', tag: '工作', text: '已歸檔的歷史事件範例', details: '' }],
+          tasks: [{ id: 'htk-demo-1', tag: '專案', text: '已歸檔的完成任務（點左側「復原此週」可還原）', details: '', done: true }],
+          summary: ''
+        }]
       };
     }
 
-    // 安全的 localStorage 封裝 + 雙重備份槽位（防止寫入中斷或單一鍵損毀）
-    function safeLocalGet(key) {
-      try {
-        return window.localStorage ? window.localStorage.getItem(key) : null;
-      } catch (e) {
-        return null;
-      }
-    }
+    const safeLocalGet = k => { try { return window.localStorage ? window.localStorage.getItem(k) : null; } catch { return null; } };
+    const safeLocalSet = (k, v) => { try { if (window.localStorage) window.localStorage.setItem(k, v); return true; } catch { return false; } };
 
-    function safeLocalSet(key, val) {
-      try {
-        if (window.localStorage) window.localStorage.setItem(key, val);
-        return true;
-      } catch (e) {
-        return false;
-      }
-    }
-
-    // IndexedDB 無容量限制儲存引擎（單一連線快取 + 自動重連保護）
-    const IDB_NAME = 'TaskControlOS_UnlimitedDB';
-    const IDB_VERSION = 1;
-    const IDB_STORE = 'kv_store';
+    const IDB_NAME = 'TaskControlOS_UnlimitedDB', IDB_STORE = 'kv_store';
     let dbPromise = null;
-
     function openUnlimitedDB() {
       if (dbPromise) return dbPromise;
-      dbPromise = new Promise((resolve, reject) => {
+      dbPromise = new Promise((res, rej) => {
         try {
-          if (!window.indexedDB) {
-            reject(new Error('IndexedDB not supported'));
-            return;
-          }
-          const req = window.indexedDB.open(IDB_NAME, IDB_VERSION);
-          req.onupgradeneeded = (e) => {
+          if (!window.indexedDB) return rej(new Error('No IDB'));
+          const req = window.indexedDB.open(IDB_NAME, 1);
+          req.onupgradeneeded = e => { if (!e.target.result.objectStoreNames.contains(IDB_STORE)) e.target.result.createObjectStore(IDB_STORE); };
+          req.onsuccess = e => {
             const db = e.target.result;
-            if (!db.objectStoreNames.contains(IDB_STORE)) {
-              db.createObjectStore(IDB_STORE);
-            }
+            db.onclose = db.onversionchange = () => { db.close(); dbPromise = null; };
+            res(db);
           };
-          req.onsuccess = (e) => {
-            const db = e.target.result;
-            db.onclose = () => { dbPromise = null; };
-            db.onversionchange = () => { db.close(); dbPromise = null; };
-            resolve(db);
-          };
-          req.onerror = (e) => {
-            dbPromise = null;
-            reject(e.target.error);
-          };
-        } catch (err) {
-          dbPromise = null;
-          reject(err);
-        }
+          req.onerror = e => { dbPromise = null; rej(e.target.error); };
+        } catch (err) { dbPromise = null; rej(err); }
       });
       return dbPromise;
     }
-
-    async function idbGet(key) {
+    async function idbGet(k) {
       try {
         const db = await openUnlimitedDB();
-        return new Promise((resolve, reject) => {
-          const tx = db.transaction(IDB_STORE, 'readonly');
-          const store = tx.objectStore(IDB_STORE);
-          const req = store.get(key);
-          req.onsuccess = () => resolve(req.result);
-          req.onerror = () => reject(req.error);
-        });
-      } catch (e) {
-        return null;
-      }
+        return new Promise((res, rej) => { const r = db.transaction(IDB_STORE, 'readonly').objectStore(IDB_STORE).get(k); r.onsuccess = () => res(r.result); r.onerror = () => rej(r.error); });
+      } catch { return null; }
     }
-
-    async function idbSet(key, val) {
+    async function idbSet(k, v) {
       try {
         const db = await openUnlimitedDB();
-        return new Promise((resolve, reject) => {
-          const tx = db.transaction(IDB_STORE, 'readwrite');
-          const store = tx.objectStore(IDB_STORE);
-          store.put(val, key);
-          tx.oncomplete = () => resolve(true);
-          tx.onerror = () => reject(tx.error);
-        });
-      } catch (e) {
-        return false;
-      }
+        return new Promise((res, rej) => { const tx = db.transaction(IDB_STORE, 'readwrite'); tx.objectStore(IDB_STORE).put(v, k); tx.oncomplete = () => res(true); tx.onerror = () => rej(tx.error); });
+      } catch { return false; }
     }
 
-    const STORAGE_KEY_DATA = 'os_clean_app_data_v2';
-    const STORAGE_KEY_DATA_BACKUP = 'os_clean_app_data_v2_backup';
-    const STORAGE_KEY_VERSIONS = 'os_clean_versions_v2';
-    const STORAGE_KEY_LAYOUT = 'os_clean_layout_v2';
+    const STORAGE_KEY_DATA = 'os_clean_app_data_v2', STORAGE_KEY_DATA_BACKUP = 'os_clean_app_data_v2_backup', STORAGE_KEY_VERSIONS = 'os_clean_versions_v2', STORAGE_KEY_LAYOUT = 'os_clean_layout_v3';
 
-    // 嚴格驗證與自動修復資料結構，確保任何匯入或歷史資料都不會導致程式崩潰
     function normalizeAppData(raw) {
-      const fallback = generateInitialDemoData();
-      if (!raw || typeof raw !== 'object') return fallback;
-
-      const data = { ...fallback, ...raw };
+      const fb = generateInitialDemoData();
+      if (!raw || typeof raw !== 'object') return fb;
+      const data = { ...fb, ...raw };
       data._updatedAt = typeof raw._updatedAt === 'number' ? raw._updatedAt : Date.now();
-      data.headerTitle1 = String(data.headerTitle1 || fallback.headerTitle1);
-      data.headerTitle2 = String(data.headerTitle2 || fallback.headerTitle2);
-      data.headerTitle3 = String(data.headerTitle3 || fallback.headerTitle3);
-      data.currentFilterTag = String(data.currentFilterTag || 'ALL');
+      data.headerTitle1 = String(data.headerTitle1 || fb.headerTitle1);
+      data.headerTitle2 = String(data.headerTitle2 || fb.headerTitle2);
+      data.headerTitle3 = String(data.headerTitle3 || fb.headerTitle3);
 
-      // 修復類別（完整保留匯入或已存的顏色、Emoji 圖示與名稱）
-      if (!Array.isArray(data.categories) || data.categories.length === 0) {
+      // 支援複選類別篩選陣列 currentFilterTags
+      if (Array.isArray(raw.currentFilterTags) && raw.currentFilterTags.length > 0) {
+        data.currentFilterTags = raw.currentFilterTags.map(String);
+      } else if (raw.currentFilterTag && raw.currentFilterTag !== 'ALL') {
+        data.currentFilterTags = [String(raw.currentFilterTag)];
+      } else {
+        data.currentFilterTags = ['ALL'];
+      }
+
+      if (!Array.isArray(data.categories) || !data.categories.length) {
         data.categories = cloneData(DEFAULT_CATEGORIES);
       } else {
-        const seenNames = new Set();
-        data.categories = data.categories
-          .filter(c => c && typeof c === 'object' && String(c.name || '').trim())
-          .map(c => ({
-            name: String(c.name).trim(),
-            icon: c.icon !== undefined && c.icon !== null ? String(c.icon).trim() : '🏷️',
-            color: COLOR_PALETTE[c.color] ? c.color : 'slate'
-          }))
-          .filter(c => {
-            if (seenNames.has(c.name)) return false;
-            seenNames.add(c.name);
-            return true;
-          });
-        if (data.categories.length === 0) data.categories = cloneData(DEFAULT_CATEGORIES);
+        const seen = new Set();
+        data.categories = data.categories.filter(c => c && typeof c === 'object' && String(c.name || '').trim()).map(c => ({
+          name: String(c.name).trim(),
+          icon: c.icon != null ? String(c.icon).trim() : '🏷️',
+          color: COLOR_PALETTE[c.color] ? c.color : 'slate'
+        })).filter(c => seen.has(c.name) ? false : (seen.add(c.name), true));
+        if (!data.categories.length) data.categories = cloneData(DEFAULT_CATEGORIES);
       }
 
-      // 修復書籤
-      data.bookmarks = Array.isArray(data.bookmarks)
-        ? data.bookmarks
-            .filter(b => b && typeof b === 'object' && String(b.name || '').trim())
-            .map((b, i) => ({
-              id: String(b.id || genId(`bm-${i}`)),
-              name: String(b.name).trim(),
-              url: String(b.url || '#').trim()
-            }))
-        : [];
+      data.bookmarks = Array.isArray(data.bookmarks) ? data.bookmarks.filter(b => b && String(b.name || '').trim()).map((b, i) => ({
+        id: String(b.id || genId(`bm-${i}`)), name: String(b.name).trim(), url: String(b.url || '#').trim()
+      })) : [];
 
-      // 修復週次與內部事件/任務
       const usedIds = new Set();
-      const ensureUniqueId = (id, prefix) => {
-        let candidate = String(id || genId(prefix));
-        while (usedIds.has(candidate)) {
-          candidate = genId(prefix);
-        }
-        usedIds.add(candidate);
-        return candidate;
-      };
+      const uid = (id, p) => { let c = String(id || genId(p)); while (usedIds.has(c)) c = genId(p); usedIds.add(c); return c; };
 
-      if (!Array.isArray(data.weeks) || data.weeks.length === 0) {
-        data.weeks = fallback.weeks;
+      if (!Array.isArray(data.weeks) || !data.weeks.length) {
+        data.weeks = fb.weeks;
       } else {
-        data.weeks = data.weeks
-          .filter(w => w && typeof w === 'object')
-          .map((w, wIdx) => {
-            const isPending = w.id === 'WPENDING' || w.weekNum === '待安排';
-            const wId = isPending ? 'WPENDING' : ensureUniqueId(w.id, `W-${wIdx}`);
-            const events = Array.isArray(w.events)
-              ? w.events.filter(Boolean).map((ev, eIdx) => {
-                  if (typeof ev === 'string') {
-                    return { id: ensureUniqueId(null, `ev-${eIdx}`), tag: '其他', text: ev, details: '' };
-                  }
-                  return {
-                    id: ensureUniqueId(ev.id, `ev-${eIdx}`),
-                    tag: String(ev.tag || '其他'),
-                    text: String(ev.text || ''),
-                    details: String(ev.details || '')
-                  };
-                })
-              : [];
-
-            const tasks = Array.isArray(w.tasks)
-              ? w.tasks.filter(Boolean).map((tk, tIdx) => {
-                  if (typeof tk === 'string') {
-                    return { id: ensureUniqueId(null, `tk-${tIdx}`), tag: '其他', text: tk, details: '', done: false };
-                  }
-                  return {
-                    id: ensureUniqueId(tk.id, `tk-${tIdx}`),
-                    tag: String(tk.tag || '其他'),
-                    text: String(tk.text || ''),
-                    details: String(tk.details || ''),
-                    done: Boolean(tk.done)
-                  };
-                })
-              : [];
-
-            return {
-              id: wId,
-              weekNum: isPending ? '待安排' : String(w.weekNum || '1'),
-              date: isPending ? '遠期計畫' : String(w.date || ''),
-              isCurrent: isPending ? false : Boolean(w.isCurrent),
-              events,
-              tasks
-            };
-          });
-
-        // 確保「待安排 (WPENDING)」永遠存在且排在最後一列
-        const pendingWeeks = data.weeks.filter(w => w.id === 'WPENDING');
-        const normalWeeks = data.weeks.filter(w => w.id !== 'WPENDING');
-        const mergedPending = {
-          id: 'WPENDING',
-          weekNum: '待安排',
-          date: '遠期計畫',
-          isCurrent: false,
-          events: pendingWeeks.flatMap(p => p.events),
-          tasks: pendingWeeks.flatMap(p => p.tasks)
-        };
-        data.weeks = [...normalWeeks, mergedPending];
+        data.weeks = data.weeks.filter(w => w && typeof w === 'object').map((w, wIdx) => {
+          const isP = w.id === 'WPENDING' || w.weekNum === '待安排';
+          return {
+            id: isP ? 'WPENDING' : uid(w.id, `W-${wIdx}`),
+            weekNum: isP ? '待安排' : String(w.weekNum || '1'),
+            date: isP ? '遠期計畫' : String(w.date || ''),
+            isCurrent: isP ? false : Boolean(w.isCurrent),
+            events: Array.isArray(w.events) ? w.events.filter(Boolean).map((ev, i) => typeof ev === 'string' ? { id: uid(null, `ev-${i}`), tag: '其他', text: ev, details: '' } : { id: uid(ev.id, `ev-${i}`), tag: String(ev.tag || '其他'), text: String(ev.text || ''), details: String(ev.details || '') }) : [],
+            tasks: Array.isArray(w.tasks) ? w.tasks.filter(Boolean).map((tk, i) => typeof tk === 'string' ? { id: uid(null, `tk-${i}`), tag: '其他', text: tk, details: '', done: false } : { id: uid(tk.id, `tk-${i}`), tag: String(tk.tag || '其他'), text: String(tk.text || ''), details: String(tk.details || ''), done: Boolean(tk.done) }) : []
+          };
+        });
+        const pWeeks = data.weeks.filter(w => w.id === 'WPENDING');
+        const nWeeks = data.weeks.filter(w => w.id !== 'WPENDING');
+        data.weeks = [...nWeeks, { id: 'WPENDING', weekNum: '待安排', date: '遠期計畫', isCurrent: false, events: pWeeks.flatMap(p => p.events), tasks: pWeeks.flatMap(p => p.tasks) }];
       }
 
-      // 修復任務池
-      data.backlog = Array.isArray(data.backlog)
-        ? data.backlog.filter(Boolean).map((b, bIdx) => ({
-            id: ensureUniqueId(b.id, `b-${bIdx}`),
-            priority: b.priority === 'low' ? 'low' : 'high',
-            tag: String(b.tag || '其他'),
-            text: String(b.text || ''),
-            details: String(b.details || '')
-          }))
-        : [];
+      data.backlog = Array.isArray(data.backlog) ? data.backlog.filter(Boolean).map((b, i) => ({
+        id: uid(b.id, `b-${i}`), priority: b.priority === 'low' ? 'low' : 'high', tag: String(b.tag || '其他'), text: String(b.text || ''), details: String(b.details || '')
+      })) : [];
 
-      // 修復歷史歸檔
-      data.history = Array.isArray(data.history)
-        ? data.history.filter(Boolean).map((h, hIdx) => ({
-            id: ensureUniqueId(h.id, `h-${hIdx}`),
-            weekNum: String(h.weekNum || ''),
-            date: String(h.date || ''),
-            wasCurrent: Boolean(h.wasCurrent),
-            summary: String(h.summary || ''),
-            events: Array.isArray(h.events)
-              ? h.events.filter(Boolean).map((ev, eIdx) =>
-                  typeof ev === 'string'
-                    ? { id: ensureUniqueId(null, `hev-${eIdx}`), tag: '其他', text: ev, details: '' }
-                    : {
-                        id: ensureUniqueId(ev.id, `hev-${eIdx}`),
-                        tag: String(ev.tag || '其他'),
-                        text: String(ev.text || ''),
-                        details: String(ev.details || '')
-                      }
-                )
-              : [],
-            tasks: Array.isArray(h.tasks)
-              ? h.tasks.filter(Boolean).map((tk, tIdx) =>
-                  typeof tk === 'string'
-                    ? { id: ensureUniqueId(null, `htk-${tIdx}`), tag: '其他', text: tk, details: '', done: true }
-                    : {
-                        id: ensureUniqueId(tk.id, `htk-${tIdx}`),
-                        tag: String(tk.tag || '其他'),
-                        text: String(tk.text || ''),
-                        details: String(tk.details || ''),
-                        done: tk.done !== undefined ? Boolean(tk.done) : true
-                      }
-                )
-              : []
-          }))
-        : [];
+      data.history = Array.isArray(data.history) ? data.history.filter(Boolean).map((h, i) => ({
+        id: uid(h.id, `h-${i}`), weekNum: String(h.weekNum || ''), date: String(h.date || ''), wasCurrent: Boolean(h.wasCurrent), summary: String(h.summary || ''),
+        events: Array.isArray(h.events) ? h.events.filter(Boolean).map((ev, j) => typeof ev === 'string' ? { id: uid(null, `hev-${j}`), tag: '其他', text: ev, details: '' } : { id: uid(ev.id, `hev-${j}`), tag: String(ev.tag || '其他'), text: String(ev.text || ''), details: String(ev.details || '') }) : [],
+        tasks: Array.isArray(h.tasks) ? h.tasks.filter(Boolean).map((tk, j) => typeof tk === 'string' ? { id: uid(null, `htk-${j}`), tag: '其他', text: tk, details: '', done: true } : { id: uid(tk.id, `htk-${j}`), tag: String(tk.tag || '其他'), text: String(tk.text || ''), details: String(tk.details || ''), done: tk.done !== undefined ? Boolean(tk.done) : true }) : []
+      })) : [];
 
-      // 若匯入的週次、任務池或歷史歸檔中含有尚未建立在 categories 裡的標籤，自動補齊至類別清單以確保篩選與顯示完整
-      const existingCatNames = new Set(data.categories.map(c => c.name));
-      const defaultCatMap = {
-        '緊急': { icon: '🔥', color: 'rose' },
-        '永平': { icon: '🌱', color: 'emerald' },
-        '少契': { icon: '🎈', color: 'sky' },
-        '大專': { icon: '🎓', color: 'purple' },
-        '畢契': { icon: '💼', color: 'amber' },
-        '傳道': { icon: '✝️', color: 'indigo' },
-        '工作': { icon: '💼', color: 'indigo' },
-        '專案': { icon: '🚀', color: 'emerald' },
-        '學習': { icon: '📚', color: 'purple' },
-        '生活': { icon: '🌱', color: 'amber' },
-        '其他': { icon: '📎', color: 'slate' }
-      };
-      const collectTag = (tag) => {
-        const t = String(tag || '').trim();
-        if (t && !existingCatNames.has(t)) {
-          existingCatNames.add(t);
-          const preset = defaultCatMap[t] || { icon: '🏷️', color: 'slate' };
-          data.categories.push({ name: t, icon: preset.icon, color: preset.color });
-        }
-      };
-      data.weeks.forEach(w => {
-        w.events.forEach(e => collectTag(e.tag));
-        w.tasks.forEach(t => collectTag(t.tag));
-      });
-      data.backlog.forEach(b => collectTag(b.tag));
-      data.history.forEach(h => {
-        h.events.forEach(e => collectTag(e.tag));
-        h.tasks.forEach(t => collectTag(t.tag));
-      });
+      const catNames = new Set(data.categories.map(c => c.name));
+      const presetMap = { '緊急':{icon:'🔥',color:'rose'}, '永平':{icon:'🌱',color:'emerald'}, '少契':{icon:'🎈',color:'sky'}, '大專':{icon:'🎓',color:'purple'}, '畢契':{icon:'💼',color:'amber'}, '傳道':{icon:'✝️',color:'indigo'}, '工作':{icon:'💼',color:'indigo'}, '專案':{icon:'🚀',color:'emerald'}, '學習':{icon:'📚',color:'purple'}, '生活':{icon:'🌱',color:'amber'}, '其他':{icon:'📎',color:'slate'} };
+      const collect = t => { const s = String(t || '').trim(); if (s && !catNames.has(s)) { catNames.add(s); const p = presetMap[s] || { icon: '🏷️', color: 'slate' }; data.categories.push({ name: s, icon: p.icon, color: p.color }); } };
+      data.weeks.forEach(w => { w.events.forEach(e => collect(e.tag)); w.tasks.forEach(t => collect(t.tag)); });
+      data.backlog.forEach(b => collect(b.tag));
+      data.history.forEach(h => { h.events.forEach(e => collect(e.tag)); h.tasks.forEach(t => collect(t.tag)); });
 
       return data;
     }
@@ -1004,117 +685,73 @@
     let currentTab = 'rolling';
     let editingItemInfo = null;
     let selectedNewCatColor = 'indigo';
-
     let stateHistory = [JSON.stringify(appData)];
     let currentStateIndex = 0;
     const MAX_HISTORY = 40;
 
-    // 自動依據裝置當前日期同步「本週 (isCurrent)」標記
     function syncCurrentWeekByDeviceDate() {
       if (!appData || !Array.isArray(appData.weeks)) return false;
       const realWeeks = appData.weeks.filter(w => w.id !== 'WPENDING');
-      if (realWeeks.length === 0) return false;
-
-      let matchedWeek = realWeeks.find(w => isWeekMatchingToday(w)) || null;
-
-      if (!matchedWeek) {
-        const now = new Date();
-        now.setHours(0, 0, 0, 0);
+      if (!realWeeks.length) return false;
+      let matched = realWeeks.find(w => isWeekMatchingToday(w)) || null;
+      if (!matched) {
+        const now = new Date(); now.setHours(0, 0, 0, 0);
         for (const w of realWeeks) {
-          const start = parseDateStrToObj(w.date);
-          if (start) {
-            const end = new Date(start);
-            end.setDate(end.getDate() + 7);
-            if (now >= start && now < end) {
-              matchedWeek = w;
-              break;
-            }
-          }
+          const s = parseDateStrToObj(w.date);
+          if (s) { const e = new Date(s); e.setDate(e.getDate() + 7); if (now >= s && now < e) { matched = w; break; } }
         }
       }
-
-      if (matchedWeek) {
+      if (matched) {
         let changed = false;
-        appData.weeks.forEach(w => {
-          const shouldBeCurrent = (w.id === matchedWeek.id);
-          if (w.isCurrent !== shouldBeCurrent) {
-            w.isCurrent = shouldBeCurrent;
-            changed = true;
-          }
-        });
+        appData.weeks.forEach(w => { const cur = (w.id === matched.id); if (w.isCurrent !== cur) { w.isCurrent = cur; changed = true; } });
         return changed;
       }
       return false;
     }
 
-    // 同步讀取（含主槽位與備份槽位自動救援）
     function loadDataSyncFallback() {
-      const candidates = [safeLocalGet(STORAGE_KEY_DATA), safeLocalGet(STORAGE_KEY_DATA_BACKUP)];
-      for (const rawStr of candidates) {
-        if (rawStr) {
-          try {
-            const parsed = JSON.parse(rawStr);
-            if (parsed && typeof parsed === 'object') {
-              return normalizeAppData(parsed);
-            }
-          } catch (e) {
-            console.warn('Corrupted slot skipped:', e);
-          }
-        }
+      for (const s of [safeLocalGet(STORAGE_KEY_DATA), safeLocalGet(STORAGE_KEY_DATA_BACKUP)]) {
+        if (s) { try { const p = JSON.parse(s); if (p && typeof p === 'object') return normalizeAppData(p); } catch {} }
       }
       return generateInitialDemoData();
     }
 
     async function initUnlimitedStorage() {
       try {
-        const [idbPrimary, idbBackup] = await Promise.all([
-          idbGet(STORAGE_KEY_DATA),
-          idbGet(STORAGE_KEY_DATA_BACKUP)
-        ]);
-
-        // 比較 IndexedDB 與 LocalStorage 的時間戳，採用最新且完整的一份
-        const validCandidates = [idbPrimary, idbBackup, appData].filter(d => d && typeof d === 'object' && Array.isArray(d.weeks));
-        if (validCandidates.length > 0) {
-          validCandidates.sort((a, b) => (b._updatedAt || 0) - (a._updatedAt || 0));
-          appData = normalizeAppData(validCandidates[0]);
+        const [p1, p2] = await Promise.all([idbGet(STORAGE_KEY_DATA), idbGet(STORAGE_KEY_DATA_BACKUP)]);
+        const valid = [p1, p2, appData].filter(d => d && typeof d === 'object' && Array.isArray(d.weeks));
+        if (valid.length) {
+          valid.sort((a, b) => (b._updatedAt || 0) - (a._updatedAt || 0));
+          appData = normalizeAppData(valid[0]);
         }
-
         await idbSet(STORAGE_KEY_DATA, cloneData(appData));
         await idbSet(STORAGE_KEY_DATA_BACKUP, cloneData(appData));
-
-        const idbVersions = await idbGet(STORAGE_KEY_VERSIONS);
-        if (Array.isArray(idbVersions)) {
-          cachedVersions = idbVersions;
-        } else {
-          const localVer = safeLocalGet(STORAGE_KEY_VERSIONS);
-          if (localVer) {
-            try { cachedVersions = JSON.parse(localVer) || []; } catch (e) { cachedVersions = []; }
-          }
+        const idbVer = await idbGet(STORAGE_KEY_VERSIONS);
+        if (Array.isArray(idbVer)) cachedVersions = idbVer;
+        else {
+          const lv = safeLocalGet(STORAGE_KEY_VERSIONS);
+          if (lv) { try { cachedVersions = JSON.parse(lv) || []; } catch { cachedVersions = []; } }
           await idbSet(STORAGE_KEY_VERSIONS, cloneData(cachedVersions));
         }
-
         syncCurrentWeekByDeviceDate();
         stateHistory = [JSON.stringify(appData)];
         currentStateIndex = 0;
         renderAll();
         updateUndoRedoButtons();
-      } catch (err) {
-        console.warn('IndexedDB fallback active:', err);
-      }
+      } catch {}
     }
 
+    // 預設非緊急任務池為關閉 (drawerOpen: false)
     function loadLayout() {
       const saved = safeLocalGet(STORAGE_KEY_LAYOUT);
-      const defaultLayout = { backlogW: 384, col1W: 130, col2W: 350, drawerOpen: true, toolbarOpen: true };
+      const def = { backlogW: 384, col1W: 130, col2W: 350, drawerOpen: false, toolbarOpen: true };
       if (saved) {
         try {
-          const parsed = JSON.parse(saved);
-          if (parsed.drawerOpen === undefined) parsed.drawerOpen = true;
-          if (parsed.toolbarOpen === undefined) parsed.toolbarOpen = true;
-          return { ...defaultLayout, ...parsed };
-        } catch (e) { console.error(e); }
+          const p = JSON.parse(saved);
+          return { ...def, ...p, drawerOpen: false };
+        } catch {}
       }
-      return defaultLayout;
+      return def;
     }
 
     function applyLayout() {
@@ -1124,24 +761,15 @@
       applyToolbarState();
     }
 
-    function saveLayout() {
-      safeLocalSet(STORAGE_KEY_LAYOUT, JSON.stringify(layoutData));
-    }
+    const saveLayout = () => safeLocalSet(STORAGE_KEY_LAYOUT, JSON.stringify(layoutData));
 
     function applyToolbarState() {
-      const wrapper = document.getElementById('collapsible-toolbar-wrapper');
-      const icon = document.getElementById('toolbar-toggle-icon');
-      const text = document.getElementById('toolbar-toggle-text');
-      if (!wrapper || !icon || !text) return;
-      if (layoutData.toolbarOpen) {
-        wrapper.classList.remove('hidden');
-        icon.textContent = '🔼';
-        text.textContent = '收合';
-      } else {
-        wrapper.classList.add('hidden');
-        icon.textContent = '🔽';
-        text.textContent = '工具列';
-      }
+      const w = document.getElementById('collapsible-toolbar-wrapper');
+      const ic = document.getElementById('toolbar-toggle-icon'), tx = document.getElementById('toolbar-toggle-text');
+      if (!w || !ic || !tx) return;
+      w.classList.toggle('hidden', !layoutData.toolbarOpen);
+      ic.textContent = layoutData.toolbarOpen ? '🔼' : '🔽';
+      tx.textContent = layoutData.toolbarOpen ? '收合' : '工具列';
     }
 
     function toggleHeaderToolbar() {
@@ -1151,91 +779,55 @@
     }
 
     function formatShortMonthDay(dateStr) {
-      if (!dateStr || typeof dateStr !== 'string') return '';
       const d = parseDateStrToObj(dateStr);
-      if (d) {
-        const m = String(d.getMonth() + 1).padStart(2, '0');
-        const day = String(d.getDate()).padStart(2, '0');
-        return `${m}/${day}`;
-      }
-      const parts = dateStr.trim().split(/[\/\-]/);
-      if (parts.length === 3) {
-        return `${parts[1].padStart(2, '0')}/${parts[2].padStart(2, '0')}`;
-      }
-      return dateStr;
+      if (d) return `${String(d.getMonth() + 1).padStart(2, '0')}/${String(d.getDate()).padStart(2, '0')}`;
+      return dateStr || '';
     }
 
     function updateCurrentWeekBadge() {
       const cw = appData.weeks.find(w => w.isCurrent);
-      const badgeEl = document.getElementById('current-week-badge-text');
-      const badgeShortEl = document.getElementById('current-week-badge-text-short');
-      let fullText = '';
-      let shortText = '';
-
+      const bFull = document.getElementById('current-week-badge-text');
+      const bShort = document.getElementById('current-week-badge-text-short');
       if (cw) {
-        fullText = `W${cw.weekNum} (${cw.date})`;
-        shortText = `W${cw.weekNum} (${formatShortMonthDay(cw.date)})`;
+        if (bFull) bFull.textContent = `W${cw.weekNum} (${cw.date})`;
+        if (bShort) bShort.textContent = `W${cw.weekNum} (${formatShortMonthDay(cw.date)})`;
       } else {
-        const todayMon = getMondayOfDate(new Date());
-        const wNum = getISOWeekNumber(todayMon);
-        const fullDateStr = formatDateYMD(todayMon);
-        fullText = `W${wNum} (${fullDateStr})`;
-        shortText = `W${wNum} (${formatShortMonthDay(fullDateStr)})`;
+        const mon = getMondayOfDate(new Date()), wNum = getISOWeekNumber(mon), ds = formatDateYMD(mon);
+        if (bFull) bFull.textContent = `W${wNum} (${ds})`;
+        if (bShort) bShort.textContent = `W${wNum} (${formatShortMonthDay(ds)})`;
       }
-
-      if (badgeEl) badgeEl.textContent = fullText;
-      if (badgeShortEl) badgeShortEl.textContent = shortText;
     }
 
     function jumpToCurrentWeek() {
       syncCurrentWeekByDeviceDate();
-      if (currentTab !== 'rolling') {
-        switchTab('rolling');
-      }
+      if (currentTab !== 'rolling') switchTab('rolling');
       let needRender = false;
-      if (appData.currentFilterTag && appData.currentFilterTag !== 'ALL') {
-        appData.currentFilterTag = 'ALL';
+      if (!isAllFilterSelected()) {
+        appData.currentFilterTags = ['ALL'];
         renderFilterChips();
         needRender = true;
       }
-      const searchInput = document.getElementById('search-input');
-      if (searchInput && searchInput.value.trim() !== '') {
-        searchInput.value = '';
-        needRender = true;
-      }
+      const sInput = document.getElementById('search-input');
+      if (sInput && sInput.value.trim()) { sInput.value = ''; needRender = true; }
       if (needRender) renderRollingTable();
-
       setTimeout(() => {
-        const targetRow = document.getElementById('current-week-row');
-        if (targetRow) {
-          targetRow.scrollIntoView({ behavior: 'smooth', block: 'center' });
-          targetRow.classList.remove('jump-highlight');
-          void targetRow.offsetWidth;
-          targetRow.classList.add('jump-highlight');
-        } else {
-          showToast('目前列表中未找到標記為本週的週次', 'info');
-        }
+        const row = document.getElementById('current-week-row');
+        if (row) {
+          row.scrollIntoView({ behavior: 'smooth', block: 'center' });
+          row.classList.remove('jump-highlight'); void row.offsetWidth; row.classList.add('jump-highlight');
+        } else showToast('目前列表中未找到標記為本週的週次', 'info');
       }, 60);
     }
 
-    function handleHeaderKeyDown(e) {
-      if (e.key === 'Enter') {
-        e.preventDefault();
-        e.target.blur();
-      }
-    }
-
+    const handleHeaderKeyDown = e => { if (e.key === 'Enter') { e.preventDefault(); e.target.blur(); } };
     function saveHeaderData() {
       appData.headerTitle1 = document.getElementById('edit-header-1').innerText.trim() || '2026 OS';
       appData.headerTitle2 = document.getElementById('edit-header-2').innerText.trim() || '個人事工與任務總控台';
       appData.headerTitle3 = document.getElementById('edit-header-3').innerText.trim();
       saveData(true);
     }
-
     function renderHeaders() {
-      const h1 = document.getElementById('edit-header-1');
-      const h2 = document.getElementById('edit-header-2');
-      const h3 = document.getElementById('edit-header-3');
+      const h1 = document.getElementById('edit-header-1'), h2 = document.getElementById('edit-header-2'), h3 = document.getElementById('edit-header-3');
       if (h1 && appData.headerTitle1) h1.innerText = appData.headerTitle1;
       if (h2 && appData.headerTitle2) h2.innerText = appData.headerTitle2;
       if (h3 && appData.headerTitle3 !== undefined) h3.innerText = appData.headerTitle3;
@@ -1244,228 +836,129 @@
 
     function initResizers() {
       applyLayout();
-      const setupResizer = (id, prop, min, max, reverse = false) => {
+      const setup = (id, prop, min, max, rev = false) => {
         const el = document.getElementById(id);
         if (!el) return;
-        el.addEventListener('mousedown', (e) => {
+        el.addEventListener('mousedown', e => {
           e.preventDefault();
-          const startX = e.clientX;
-          const startW = layoutData[prop];
-          el.classList.add('active');
-          document.body.style.cursor = 'col-resize';
-          document.body.style.userSelect = 'none';
-
-          const onMouseMove = (moveEv) => {
-            const delta = moveEv.clientX - startX;
-            let newW = reverse ? startW - delta : startW + delta;
-            newW = Math.max(min, Math.min(newW, max));
-            layoutData[prop] = newW;
+          const startX = e.clientX, startW = layoutData[prop];
+          el.classList.add('active'); document.body.style.cursor = 'col-resize'; document.body.style.userSelect = 'none';
+          const move = ev => {
+            const d = ev.clientX - startX;
+            layoutData[prop] = Math.max(min, Math.min(rev ? startW - d : startW + d, max));
             applyLayout();
           };
-
-          const onMouseUp = () => {
-            el.classList.remove('active');
-            document.body.style.cursor = '';
-            document.body.style.userSelect = '';
-            document.removeEventListener('mousemove', onMouseMove);
-            document.removeEventListener('mouseup', onMouseUp);
+          const up = () => {
+            el.classList.remove('active'); document.body.style.cursor = ''; document.body.style.userSelect = '';
+            document.removeEventListener('mousemove', move); document.removeEventListener('mouseup', up);
             saveLayout();
           };
-
-          document.addEventListener('mousemove', onMouseMove);
-          document.addEventListener('mouseup', onMouseUp);
+          document.addEventListener('mousemove', move); document.addEventListener('mouseup', up);
         });
       };
-      setupResizer('resizer-backlog', 'backlogW', 250, 700, true);
-      setupResizer('resizer-col1', 'col1W', 80, 250);
-      setupResizer('resizer-col2', 'col2W', 200, 800);
+      setup('resizer-backlog', 'backlogW', 250, 700, true);
+      setup('resizer-col1', 'col1W', 80, 250);
+      setup('resizer-col2', 'col2W', 200, 800);
     }
 
     function saveData(skipHistory = false) {
       appData._updatedAt = Date.now();
-      const serialized = JSON.stringify(appData);
-
+      const ser = JSON.stringify(appData);
       if (!skipHistory) {
-        if (currentStateIndex < stateHistory.length - 1) {
-          stateHistory = stateHistory.slice(0, currentStateIndex + 1);
-        }
-        if (stateHistory[stateHistory.length - 1] !== serialized) {
-          stateHistory.push(serialized);
+        if (currentStateIndex < stateHistory.length - 1) stateHistory = stateHistory.slice(0, currentStateIndex + 1);
+        if (stateHistory[stateHistory.length - 1] !== ser) {
+          stateHistory.push(ser);
           currentStateIndex = stateHistory.length - 1;
-          if (stateHistory.length > MAX_HISTORY) {
-            stateHistory.shift();
-            currentStateIndex--;
-          }
+          if (stateHistory.length > MAX_HISTORY) { stateHistory.shift(); currentStateIndex--; }
         }
       }
-
-      // 雙重寫入 IndexedDB 與 LocalStorage (主槽位 + 備份槽位)，避免任何單點故障或寫入中斷
-      const snapshot = cloneData(appData);
-      idbSet(STORAGE_KEY_DATA, snapshot);
-      idbSet(STORAGE_KEY_DATA_BACKUP, snapshot);
-      safeLocalSet(STORAGE_KEY_DATA, serialized);
-      safeLocalSet(STORAGE_KEY_DATA_BACKUP, serialized);
-
-      updateBacklogBadge();
-      updateUndoRedoButtons();
-      updateCurrentWeekBadge();
+      const snap = cloneData(appData);
+      idbSet(STORAGE_KEY_DATA, snap); idbSet(STORAGE_KEY_DATA_BACKUP, snap);
+      safeLocalSet(STORAGE_KEY_DATA, ser); safeLocalSet(STORAGE_KEY_DATA_BACKUP, ser);
+      updateBacklogBadge(); updateUndoRedoButtons(); updateCurrentWeekBadge();
     }
 
     function undo() {
       if (currentStateIndex > 0) {
         currentStateIndex--;
         appData = normalizeAppData(JSON.parse(stateHistory[currentStateIndex]));
-        saveData(true);
-        renderAll();
-        showToast('已還原上一步');
+        saveData(true); renderAll(); showToast('已還原上一步');
       }
     }
-
     function redo() {
       if (currentStateIndex < stateHistory.length - 1) {
         currentStateIndex++;
         appData = normalizeAppData(JSON.parse(stateHistory[currentStateIndex]));
-        saveData(true);
-        renderAll();
-        showToast('已重做');
+        saveData(true); renderAll(); showToast('已重做');
       }
     }
-
     function updateUndoRedoButtons() {
-      const btnUndo = document.getElementById('btn-undo');
-      const btnRedo = document.getElementById('btn-redo');
-      if (btnUndo) btnUndo.disabled = currentStateIndex <= 0;
-      if (btnRedo) btnRedo.disabled = currentStateIndex >= stateHistory.length - 1;
+      const u = document.getElementById('btn-undo'), r = document.getElementById('btn-redo');
+      if (u) u.disabled = currentStateIndex <= 0;
+      if (r) r.disabled = currentStateIndex >= stateHistory.length - 1;
     }
 
-    // 匯出檔案名稱與裝置本地日期完全相同 (例如：2026-10-16.json)，並確保完整包含 categories (名稱、顏色、Emoji)
     function exportData() {
       try {
-        const deviceDateStr = getDeviceDateString('-');
-        const exportPayload = {
-          ...cloneData(appData),
-          categories: cloneData(appData.categories || DEFAULT_CATEGORIES)
-        };
-        const jsonStr = JSON.stringify(exportPayload, null, 2);
-        const blob = new Blob([jsonStr], { type: 'application/json;charset=utf-8' });
-        const url = URL.createObjectURL(blob);
-        const dlAnchor = document.createElement('a');
-        dlAnchor.href = url;
-        dlAnchor.download = `${deviceDateStr}.json`;
-        document.body.appendChild(dlAnchor);
-        dlAnchor.click();
-        dlAnchor.remove();
+        const ds = getDeviceDateString('-');
+        const blob = new Blob([JSON.stringify({ ...cloneData(appData), categories: cloneData(appData.categories || DEFAULT_CATEGORIES) }, null, 2)], { type: 'application/json;charset=utf-8' });
+        const url = URL.createObjectURL(blob), a = document.createElement('a');
+        a.href = url; a.download = `${ds}.json`; document.body.appendChild(a); a.click(); a.remove();
         setTimeout(() => URL.revokeObjectURL(url), 1000);
-        showToast(`備份檔案 (${deviceDateStr}.json) 已匯出（含自訂類別設定）`, 'info');
-      } catch (err) {
-        showToast('匯出失敗，請重試', 'error');
-      }
+        showToast(`備份檔案 (${ds}.json) 已匯出`, 'info');
+      } catch { showToast('匯出失敗，請重試', 'error'); }
     }
 
     function triggerImportData() {
-      const fileInput = document.getElementById('import-file-input');
-      if (fileInput) {
-        fileInput.value = '';
-        fileInput.click();
-      }
+      const inp = document.getElementById('import-file-input');
+      if (inp) { inp.value = ''; inp.click(); }
     }
 
     function handleImportFile(event) {
-      const file = event.target.files && event.target.files[0];
+      const file = event.target.files?.[0];
       if (!file) return;
       const reader = new FileReader();
-      reader.onload = (e) => {
+      reader.onload = e => {
         try {
-          const parsed = JSON.parse(e.target.result);
-          // 支援匯入直接匯出的資料檔，或包在 { data: ... } / { appData: ... } 內的快照結構
-          const imported = (parsed && parsed.data && Array.isArray(parsed.data.weeks))
-            ? parsed.data
-            : (parsed && parsed.appData && Array.isArray(parsed.appData.weeks))
-              ? parsed.appData
-              : parsed;
-          if (!imported || (!Array.isArray(imported.weeks) && !Array.isArray(imported.backlog) && !Array.isArray(imported.categories))) {
-            showToast('檔案格式不正確，請選擇有效的備份 JSON 檔', 'error');
-            return;
+          const p = JSON.parse(e.target.result);
+          const imp = p?.data?.weeks ? p.data : p?.appData?.weeks ? p.appData : p;
+          if (!imp || (!Array.isArray(imp.weeks) && !Array.isArray(imp.backlog) && !Array.isArray(imp.categories))) {
+            return showToast('檔案格式不正確', 'error');
           }
-          showConfirm('匯入資料確認', `確定要匯入「${file.name}」嗎？\n將完整匯入所有週次、任務與「自訂類別（含顏色、Emoji）」。匯入前系統會自動為您建立一份當前狀態的歷史快照。`, () => {
-            // 匯入前自動拍下快照保護舊資料
-            const autoVersions = getSavedVersions();
-            autoVersions.unshift({
-              id: genId('v-auto'),
-              name: `[匯入前自動備份] ${getDeviceDateString('/')} ${new Date().toTimeString().slice(0, 5)}`,
-              date: new Date().toLocaleString(),
-              data: cloneData(appData)
-            });
-            saveVersionsToLocal(autoVersions.slice(0, 50));
-
-            appData = normalizeAppData(imported);
-            syncCurrentWeekByDeviceDate();
-            saveData();
-            renderAll();
-            populateCategorySelects();
+          showConfirm('匯入資料確認', `確定要匯入「${file.name}」嗎？\n將完整匯入所有週次、任務與自訂類別。匯入前系統會自動建立當前快照。`, () => {
+            const vers = getSavedVersions();
+            vers.unshift({ id: genId('v-auto'), name: `[匯入前自動備份] ${getDeviceDateString('/')} ${new Date().toTimeString().slice(0, 5)}`, date: new Date().toLocaleString(), data: cloneData(appData) });
+            saveVersionsToLocal(vers.slice(0, 50));
+            appData = normalizeAppData(imp);
+            syncCurrentWeekByDeviceDate(); saveData(); renderAll(); populateCategorySelects();
             showToast('✅ 資料與自訂類別匯入成功！');
           });
-        } catch (err) {
-          showToast('讀取 JSON 檔案失敗，請確認檔案格式', 'error');
-        }
+        } catch { showToast('讀取 JSON 檔案失敗', 'error'); }
       };
       reader.readAsText(file);
     }
 
-    function getSavedVersions() {
-      return Array.isArray(cachedVersions) ? cachedVersions : [];
-    }
-
-    function saveVersionsToLocal(versions) {
-      cachedVersions = versions;
-      idbSet(STORAGE_KEY_VERSIONS, cloneData(versions));
-      safeLocalSet(STORAGE_KEY_VERSIONS, JSON.stringify(versions));
-    }
-
+    const getSavedVersions = () => Array.isArray(cachedVersions) ? cachedVersions : [];
+    function saveVersionsToLocal(v) { cachedVersions = v; idbSet(STORAGE_KEY_VERSIONS, cloneData(v)); safeLocalSet(STORAGE_KEY_VERSIONS, JSON.stringify(v)); }
     function openSaveVersionModal() {
-      const defaultName = `${getDeviceDateString('/')} 備份`;
-      document.getElementById('version-name-input').value = defaultName;
+      document.getElementById('version-name-input').value = `${getDeviceDateString('/')} 備份`;
       toggleModalUI('save-version-modal', 'save-version-modal-box', true);
     }
-
-    function closeSaveVersionModal() {
-      toggleModalUI('save-version-modal', 'save-version-modal-box', false);
-    }
-
+    const closeSaveVersionModal = () => toggleModalUI('save-version-modal', 'save-version-modal-box', false);
     function confirmSaveVersion() {
       const name = document.getElementById('version-name-input').value.trim();
-      if (!name) { showToast('請輸入版本名稱', 'error'); return; }
-
-      const versions = getSavedVersions();
-      versions.unshift({
-        id: genId('v'),
-        name: name,
-        date: new Date().toLocaleString(),
-        data: cloneData(appData)
-      });
-      saveVersionsToLocal(versions);
-      closeSaveVersionModal();
-      showToast('✅ 已儲存版本：' + name);
+      if (!name) return showToast('請輸入版本名稱', 'error');
+      const v = getSavedVersions();
+      v.unshift({ id: genId('v'), name, date: new Date().toLocaleString(), data: cloneData(appData) });
+      saveVersionsToLocal(v); closeSaveVersionModal(); showToast('✅ 已儲存版本：' + name);
     }
-
-    function openVersionHistoryModal() {
-      renderVersionHistoryList();
-      toggleModalUI('version-history-modal', 'version-history-modal-box', true);
-    }
-
-    function closeVersionHistoryModal() {
-      toggleModalUI('version-history-modal', 'version-history-modal-box', false);
-    }
-
+    function openVersionHistoryModal() { renderVersionHistoryList(); toggleModalUI('version-history-modal', 'version-history-modal-box', true); }
+    const closeVersionHistoryModal = () => toggleModalUI('version-history-modal', 'version-history-modal-box', false);
     function renderVersionHistoryList() {
-      const versions = getSavedVersions();
-      const container = document.getElementById('version-history-list');
-      if (versions.length === 0) {
-        container.innerHTML = '<div class="text-sm text-slate-500 text-center py-6 bg-slate-50 rounded-lg border border-slate-200">尚無儲存的歷史版本</div>';
-        return;
-      }
-      container.innerHTML = versions.map(v => `
-        <div class="flex items-center justify-between p-3 border border-slate-200 rounded-lg mb-2 bg-slate-50 hover:bg-white transition group">
+      const vers = getSavedVersions(), c = document.getElementById('version-history-list');
+      if (!vers.length) { c.innerHTML = '<div class="text-sm text-slate-500 text-center py-6 bg-slate-50 rounded-lg border border-slate-200">尚無儲存的歷史版本</div>'; return; }
+      c.innerHTML = vers.map(v => `
+        <div class="flex items-center justify-between p-3 border border-slate-200 rounded-lg mb-2 bg-slate-50 hover:bg-white transition">
           <div class="min-w-0 pr-2">
             <div class="font-bold text-sm text-slate-800 truncate">${escapeHtml(v.name)}</div>
             <div class="text-[11px] text-slate-500">${escapeHtml(v.date)}</div>
@@ -1474,70 +967,80 @@
             <button onclick="loadVersion('${escapeHtml(v.id)}')" class="px-2.5 py-1.5 bg-indigo-600 hover:bg-indigo-500 text-white font-medium text-[11px] rounded transition shadow-sm">載入</button>
             <button onclick="deleteVersion('${escapeHtml(v.id)}')" class="px-2 py-1.5 text-slate-400 hover:text-rose-600 text-[11px] transition">刪除</button>
           </div>
-        </div>
-      `).join('');
+        </div>`).join('');
     }
-
     function loadVersion(id) {
       closeVersionHistoryModal();
       setTimeout(() => {
-        showConfirm('載入歷史版本', '確定要載入此版本嗎？\n（載入後若反悔，仍可點擊上方 ↩️ 還原上一步）', () => {
-          const versions = getSavedVersions();
-          const v = versions.find(x => x.id === id);
-          if (v) {
-            appData = normalizeAppData(cloneData(v.data));
-            syncCurrentWeekByDeviceDate();
-            saveData();
-            renderAll();
-            showToast('✅ 已載入版本：' + v.name);
-          }
+        showConfirm('載入歷史版本', '確定要載入此版本嗎？（載入後仍可點 ↩️ 還原）', () => {
+          const v = getSavedVersions().find(x => x.id === id);
+          if (v) { appData = normalizeAppData(cloneData(v.data)); syncCurrentWeekByDeviceDate(); saveData(); renderAll(); showToast('✅ 已載入版本：' + v.name); }
         });
       }, 200);
     }
-
     function deleteVersion(id) {
-      showConfirm('刪除歷史版本', '確定要刪除這個歷史版本嗎？此操作無法還原。', () => {
-        const versions = getSavedVersions().filter(x => x.id !== id);
-        saveVersionsToLocal(versions);
-        renderVersionHistoryList();
-        showToast('已刪除版本');
+      showConfirm('刪除歷史版本', '確定要刪除這個歷史版本嗎？', () => {
+        saveVersionsToLocal(getSavedVersions().filter(x => x.id !== id));
+        renderVersionHistoryList(); showToast('已刪除版本');
       });
     }
 
     function getTagStyle(tag) {
-      const cats = appData.categories || DEFAULT_CATEGORIES;
-      const found = cats.find(c => c.name === tag);
-      const colorKey = found ? found.color : 'slate';
-      const palette = COLOR_PALETTE[colorKey] || COLOR_PALETTE.slate;
-      return palette.badge;
+      const f = (appData.categories || DEFAULT_CATEGORIES).find(c => c.name === tag);
+      return (COLOR_PALETTE[f ? f.color : 'slate'] || COLOR_PALETTE.slate).badge;
+    }
+
+    // 複選篩選邏輯：點「全部顯示」會解除其他選取；點個別類別可多選切換
+    function isAllFilterSelected() {
+      const tags = appData.currentFilterTags;
+      return !Array.isArray(tags) || tags.length === 0 || tags.includes('ALL');
+    }
+
+    function setFilterTag(tag) {
+      if (!Array.isArray(appData.currentFilterTags)) appData.currentFilterTags = ['ALL'];
+      if (tag === 'ALL') {
+        appData.currentFilterTags = ['ALL'];
+      } else {
+        let next = appData.currentFilterTags.filter(t => t !== 'ALL');
+        if (next.includes(tag)) {
+          next = next.filter(t => t !== tag);
+        } else {
+          next.push(tag);
+        }
+        appData.currentFilterTags = next.length === 0 ? ['ALL'] : next;
+      }
+      renderFilterChips();
+      renderRollingTable();
     }
 
     function renderFilterChips() {
       const container = document.getElementById('filter-chips-container');
       if (!container) return;
       const cats = appData.categories || DEFAULT_CATEGORIES;
-      const currentTag = appData.currentFilterTag || 'ALL';
-
-      if (currentTag !== 'ALL' && !cats.some(c => c.name === currentTag)) {
-        appData.currentFilterTag = 'ALL';
+      const validNames = new Set(cats.map(c => c.name));
+      if (Array.isArray(appData.currentFilterTags)) {
+        const cleaned = appData.currentFilterTags.filter(t => t === 'ALL' || validNames.has(t));
+        appData.currentFilterTags = cleaned.length ? cleaned : ['ALL'];
+      } else {
+        appData.currentFilterTags = ['ALL'];
       }
-
+      const allActive = isAllFilterSelected();
       const activeClass = 'ring-2 ring-offset-1 ring-slate-900 font-bold';
       container.innerHTML = '';
 
       const allBtn = document.createElement('button');
       allBtn.type = 'button';
-      allBtn.className = `filter-chip bg-slate-800 text-white text-xs px-2.5 py-1 rounded-full font-medium transition ${appData.currentFilterTag === 'ALL' ? activeClass : ''}`;
+      allBtn.className = `filter-chip bg-slate-800 text-white text-xs px-2.5 py-1 rounded-full font-medium transition ${allActive ? activeClass : 'opacity-70 hover:opacity-100'}`;
       allBtn.textContent = '全部顯示';
       allBtn.onclick = () => setFilterTag('ALL');
       container.appendChild(allBtn);
 
       cats.forEach(cat => {
-        const palette = COLOR_PALETTE[cat.color] || COLOR_PALETTE.slate;
-        const isActive = appData.currentFilterTag === cat.name;
+        const pal = COLOR_PALETTE[cat.color] || COLOR_PALETTE.slate;
+        const isActive = !allActive && appData.currentFilterTags.includes(cat.name);
         const btn = document.createElement('button');
         btn.type = 'button';
-        btn.className = `filter-chip ${palette.chip} text-xs px-2.5 py-1 rounded-full font-medium transition ${isActive ? activeClass : ''}`;
+        btn.className = `filter-chip ${pal.chip} text-xs px-2.5 py-1 rounded-full font-medium transition ${isActive ? activeClass : ''}`;
         btn.textContent = `${cat.icon ? cat.icon + ' ' : ''}${cat.name}`;
         btn.onclick = () => setFilterTag(cat.name);
         container.appendChild(btn);
@@ -1546,190 +1049,100 @@
 
     function populateCategorySelects(selectedTag = null) {
       const cats = appData.categories || DEFAULT_CATEGORIES;
-      const addSel = document.getElementById('modal-tag-select');
-      const editSel = document.getElementById('edit-modal-tag');
-
-      const optionsHtml = cats.map(c => {
-        const iconPart = c.icon ? `${c.icon} ` : '';
-        return `<option value="${escapeHtml(c.name)}">${escapeHtml(iconPart + c.name)}</option>`;
-      }).join('');
-
-      if (addSel) {
-        const prev = addSel.value;
-        addSel.innerHTML = optionsHtml;
-        if (prev && cats.some(c => c.name === prev)) addSel.value = prev;
-      }
+      const addSel = document.getElementById('modal-tag-select'), editSel = document.getElementById('edit-modal-tag');
+      const html = cats.map(c => `<option value="${escapeHtml(c.name)}">${escapeHtml((c.icon ? c.icon + ' ' : '') + c.name)}</option>`).join('');
+      if (addSel) { const prev = addSel.value; addSel.innerHTML = html; if (prev && cats.some(c => c.name === prev)) addSel.value = prev; }
       if (editSel) {
-        const target = selectedTag || editSel.value;
-        editSel.innerHTML = optionsHtml;
-        if (target && !cats.some(c => c.name === target)) {
-          editSel.innerHTML += `<option value="${escapeHtml(target)}">📎 ${escapeHtml(target)}</option>`;
-        }
-        if (target) editSel.value = target;
+        const t = selectedTag || editSel.value;
+        editSel.innerHTML = html + (t && !cats.some(c => c.name === t) ? `<option value="${escapeHtml(t)}">📎 ${escapeHtml(t)}</option>` : '');
+        if (t) editSel.value = t;
       }
     }
 
-    function openCategoryManagerModal() {
-      renderNewCategoryColorPicker();
-      renderCategoryManagerList();
-      toggleModalUI('category-modal', 'category-modal-box', true);
-    }
-
-    function closeCategoryManagerModal() {
-      toggleModalUI('category-modal', 'category-modal-box', false);
-    }
+    function openCategoryManagerModal() { renderNewCategoryColorPicker(); renderCategoryManagerList(); toggleModalUI('category-modal', 'category-modal-box', true); }
+    const closeCategoryManagerModal = () => toggleModalUI('category-modal', 'category-modal-box', false);
 
     function renderNewCategoryColorPicker() {
-      const picker = document.getElementById('new-cat-color-picker');
-      if (!picker) return;
-      picker.innerHTML = Object.entries(COLOR_PALETTE).map(([key, val]) => {
-        const isSelected = key === selectedNewCatColor;
-        return `
-          <button type="button" onclick="selectNewCatColor('${key}')" class="px-2 py-1 rounded-lg border text-[11px] font-semibold flex items-center justify-center gap-1 transition ${val.badge} ${isSelected ? 'ring-2 ring-slate-900 ring-offset-1' : 'opacity-75 hover:opacity-100'}">
-            <span class="w-2 h-2 rounded-full ${val.dot}"></span>
-            <span>${val.label}</span>
-          </button>
-        `;
-      }).join('');
-    }
-
-    function selectNewCatColor(colorKey) {
-      selectedNewCatColor = colorKey;
-      renderNewCategoryColorPicker();
+      const p = document.getElementById('new-cat-color-picker');
+      if (!p) return;
+      p.innerHTML = Object.entries(COLOR_PALETTE).map(([k, v]) => `
+        <button type="button" onclick="selectedNewCatColor='${k}';renderNewCategoryColorPicker();" class="px-2 py-1 rounded-lg border text-[11px] font-semibold flex items-center justify-center gap-1 transition ${v.badge} ${k === selectedNewCatColor ? 'ring-2 ring-slate-900 ring-offset-1' : 'opacity-75 hover:opacity-100'}">
+          <span class="w-2 h-2 rounded-full ${v.dot}"></span><span>${v.label}</span>
+        </button>`).join('');
     }
 
     function renderCategoryManagerList() {
-      const listEl = document.getElementById('category-manager-list');
-      if (!listEl) return;
-      const cats = appData.categories || [];
-
-      listEl.innerHTML = cats.map((cat, idx) => {
-        const colorOptions = Object.entries(COLOR_PALETTE).map(([k, v]) =>
-          `<option value="${k}" ${cat.color === k ? 'selected' : ''}>${v.label}</option>`
-        ).join('');
-
-        return `
-          <div class="flex items-center justify-between gap-2 bg-slate-50 border border-slate-200 rounded-lg px-2.5 py-1.5">
-            <div class="flex items-center gap-2 min-w-0">
-              <span class="tag-badge border ${getTagStyle(cat.name)}">${escapeHtml((cat.icon ? cat.icon + ' ' : '') + cat.name)}</span>
-            </div>
-            <div class="flex items-center gap-1.5 shrink-0">
-              <select onchange="changeCategoryColor(${idx}, this.value)" class="border border-slate-300 rounded px-1.5 py-0.5 bg-white text-[11px]">
-                ${colorOptions}
-              </select>
-              <button onclick="deleteCustomCategory(${idx})" title="刪除此類別" class="text-slate-400 hover:text-rose-600 px-1.5 py-0.5 rounded hover:bg-rose-50 transition">🗑️</button>
-            </div>
+      const el = document.getElementById('category-manager-list');
+      if (!el) return;
+      el.innerHTML = (appData.categories || []).map((cat, idx) => `
+        <div class="flex items-center justify-between gap-2 bg-slate-50 border border-slate-200 rounded-lg px-2.5 py-1.5">
+          <span class="tag-badge border ${getTagStyle(cat.name)}">${escapeHtml((cat.icon ? cat.icon + ' ' : '') + cat.name)}</span>
+          <div class="flex items-center gap-1.5 shrink-0">
+            <select onchange="changeCategoryColor(${idx}, this.value)" class="border border-slate-300 rounded px-1.5 py-0.5 bg-white text-[11px]">
+              ${Object.entries(COLOR_PALETTE).map(([k, v]) => `<option value="${k}" ${cat.color === k ? 'selected' : ''}>${v.label}</option>`).join('')}
+            </select>
+            <button onclick="deleteCustomCategory(${idx})" title="刪除此類別" class="text-slate-400 hover:text-rose-600 px-1.5 py-0.5 rounded hover:bg-rose-50 transition">🗑️</button>
           </div>
-        `;
-      }).join('');
+        </div>`).join('');
     }
 
     function addCustomCategory() {
-      const iconInput = document.getElementById('new-cat-icon');
-      const nameInput = document.getElementById('new-cat-name');
-      const icon = (iconInput.value || '').trim();
-      const name = (nameInput.value || '').trim();
-
-      if (!name) {
-        showToast('請輸入類別名稱', 'error');
-        return;
-      }
-      if (!appData.categories) appData.categories = [];
-      if (appData.categories.some(c => c.name === name)) {
-        showToast('此類別名稱已存在', 'error');
-        return;
-      }
-
-      appData.categories.push({
-        name: name,
-        icon: icon || '🏷️',
-        color: selectedNewCatColor || 'indigo'
-      });
-
-      iconInput.value = '';
-      nameInput.value = '';
-      saveData();
-      renderAll();
-      populateCategorySelects();
-      renderCategoryManagerList();
+      const ic = document.getElementById('new-cat-icon'), nm = document.getElementById('new-cat-name');
+      const name = (nm.value || '').trim();
+      if (!name) return showToast('請輸入類別名稱', 'error');
+      if ((appData.categories || []).some(c => c.name === name)) return showToast('此類別名稱已存在', 'error');
+      appData.categories.push({ name, icon: (ic.value || '').trim() || '🏷️', color: selectedNewCatColor || 'indigo' });
+      ic.value = ''; nm.value = '';
+      saveData(); renderAll(); populateCategorySelects(); renderCategoryManagerList();
       showToast(`✅ 已新增類別「${name}」`);
     }
 
-    function changeCategoryColor(idx, newColor) {
-      if (!appData.categories || !appData.categories[idx]) return;
-      appData.categories[idx].color = newColor;
-      saveData();
-      renderAll();
-      renderCategoryManagerList();
+    function changeCategoryColor(idx, c) {
+      if (appData.categories?.[idx]) { appData.categories[idx].color = c; saveData(); renderAll(); renderCategoryManagerList(); }
     }
 
     function deleteCustomCategory(idx) {
-      if (!appData.categories || appData.categories.length <= 1) {
-        showToast('請至少保留一個類別', 'error');
-        return;
-      }
-      const target = appData.categories[idx];
-      showConfirm('刪除類別', `確定要刪除「${target.name}」類別嗎？\n（已套用此類別的既有項目仍會保留標籤文字）`, () => {
+      if ((appData.categories || []).length <= 1) return showToast('請至少保留一個類別', 'error');
+      const t = appData.categories[idx];
+      showConfirm('刪除類別', `確定要刪除「${t.name}」類別嗎？`, () => {
         appData.categories.splice(idx, 1);
-        if (appData.currentFilterTag === target.name) {
-          appData.currentFilterTag = 'ALL';
+        if (Array.isArray(appData.currentFilterTags)) {
+          appData.currentFilterTags = appData.currentFilterTags.filter(x => x !== t.name);
+          if (!appData.currentFilterTags.length) appData.currentFilterTags = ['ALL'];
         }
-        saveData();
-        renderAll();
-        populateCategorySelects();
-        renderCategoryManagerList();
-        showToast(`已刪除類別「${target.name}」`);
+        saveData(); renderAll(); populateCategorySelects(); renderCategoryManagerList();
+        showToast(`已刪除類別「${t.name}」`);
       });
     }
 
     function renderBookmarks() {
-      const container = document.getElementById('bookmark-list-container');
-      if (!container) return;
-      container.innerHTML = appData.bookmarks.map(bm => `
+      const c = document.getElementById('bookmark-list-container');
+      if (!c) return;
+      c.innerHTML = appData.bookmarks.map(bm => `
         <div class="bg-slate-700/70 hover:bg-slate-600 text-slate-200 rounded flex items-center transition group whitespace-nowrap">
           <a href="${escapeHtml(bm.url)}" target="_blank" rel="noopener noreferrer" class="px-2 py-0.5 truncate max-w-[150px] sm:max-w-[200px] hover:text-white">${escapeHtml(bm.name)}</a>
-          <button onclick="deleteBookmark('${escapeHtml(bm.id)}')" title="刪除連結" class="pr-1.5 pl-0.5 text-slate-400 hover:text-rose-400 opacity-0 group-hover:opacity-100 transition focus:opacity-100">✕</button>
-        </div>
-      `).join('');
+          <button onclick="deleteBookmark('${escapeHtml(bm.id)}')" title="刪除連結" class="pr-1.5 pl-0.5 text-slate-400 hover:text-rose-400 opacity-0 group-hover:opacity-100 transition">✕</button>
+        </div>`).join('');
     }
-
     function openBookmarkModal() {
       document.getElementById('bookmark-name-input').value = '';
       document.getElementById('bookmark-url-input').value = '';
       toggleModalUI('bookmark-modal', 'bookmark-modal-box', true);
     }
-
-    function closeBookmarkModal() {
-      toggleModalUI('bookmark-modal', 'bookmark-modal-box', false);
-    }
-
+    const closeBookmarkModal = () => toggleModalUI('bookmark-modal', 'bookmark-modal-box', false);
     function submitBookmark() {
       const name = document.getElementById('bookmark-name-input').value.trim();
       let url = document.getElementById('bookmark-url-input').value.trim();
-      if (!name || !url) { showToast('名稱和連結都不能為空', 'error'); return; }
-      if (url !== '#' && !/^https?:\/\//i.test(url)) {
-        url = 'https://' + url;
-      }
+      if (!name || !url) return showToast('名稱和連結都不能為空', 'error');
+      if (url !== '#' && !/^https?:\/\//i.test(url)) url = 'https://' + url;
       appData.bookmarks.push({ id: genId('bm'), name, url });
-      saveData();
-      renderBookmarks();
-      closeBookmarkModal();
-      showToast('✅ 連結新增成功');
+      saveData(); renderBookmarks(); closeBookmarkModal(); showToast('✅ 連結新增成功');
     }
-
     function deleteBookmark(id) {
       showConfirm('刪除連結', '確定要刪除這個連結嗎？', () => {
-        appData.bookmarks = appData.bookmarks.filter(bm => bm.id !== id);
-        saveData();
-        renderBookmarks();
-        showToast('已刪除連結');
+        appData.bookmarks = appData.bookmarks.filter(b => b.id !== id);
+        saveData(); renderBookmarks(); showToast('已刪除連結');
       });
-    }
-
-    function setFilterTag(tag) {
-      appData.currentFilterTag = tag;
-      renderFilterChips();
-      renderRollingTable();
     }
 
     function renderRollingTable() {
@@ -1737,33 +1150,32 @@
       if (!container) return;
       const hideCompleted = document.getElementById('hide-completed-toggle').checked;
       const keyword = (document.getElementById('search-input').value || '').trim().toLowerCase();
-      const filterTag = appData.currentFilterTag || 'ALL';
+      const allSelected = isAllFilterSelected();
+      const selectedSet = new Set(appData.currentFilterTags || []);
 
       container.innerHTML = '';
 
       appData.weeks.forEach((week, wIdx) => {
         const filteredTasks = week.tasks.filter(t => {
           if (hideCompleted && t.done) return false;
-          if (filterTag !== 'ALL' && t.tag !== filterTag) return false;
-          const searchStr = `${t.text} ${t.details || ''} ${t.tag}`;
-          if (keyword && !searchStr.toLowerCase().includes(keyword)) return false;
+          if (!allSelected && !selectedSet.has(t.tag)) return false;
+          if (keyword && !`${t.text} ${t.details || ''} ${t.tag}`.toLowerCase().includes(keyword)) return false;
           return true;
         });
 
         const filteredEvents = week.events.filter(e => {
-          if (filterTag !== 'ALL' && e.tag !== filterTag) return false;
-          const searchStr = `${e.text} ${e.details || ''} ${e.tag}`;
-          if (keyword && !searchStr.toLowerCase().includes(keyword)) return false;
+          if (!allSelected && !selectedSet.has(e.tag)) return false;
+          if (keyword && !`${e.text} ${e.details || ''} ${e.tag}`.toLowerCase().includes(keyword)) return false;
           return true;
         });
 
-        if ((keyword || filterTag !== 'ALL') && filteredTasks.length === 0 && filteredEvents.length === 0) return;
+        if ((keyword || !allSelected) && !filteredTasks.length && !filteredEvents.length) return;
 
         const row = document.createElement('div');
         if (week.isCurrent) row.id = 'current-week-row';
         row.className = `flex flex-col sm:flex-row p-4 gap-3 sm:gap-0 transition ${week.isCurrent ? 'bg-amber-50/70 border-l-4 border-l-amber-500' : 'hover:bg-slate-50/80'}`;
 
-        // 窄版(手機版)時週數與日期呈現在橫的同一列；寬版維持左欄垂直排列
+        // 左欄：週數日期 + 「➕ 新增」按鈕（寬版在歸檔上方，窄版在歸檔左邊）
         const leftCol = document.createElement('div');
         leftCol.className = 'w-full sm:w-[var(--col1-w)] pr-2 shrink-0 flex flex-row sm:flex-col items-center sm:items-start justify-between sm:justify-start gap-2 sm:gap-1';
         const weekLabel = week.id === 'WPENDING' ? escapeHtml(week.weekNum) : `W${escapeHtml(week.weekNum)}`;
@@ -1773,705 +1185,307 @@
             <div class="text-sm font-bold text-slate-800 sm:mt-1">${escapeHtml(week.date)}</div>
             ${week.isCurrent ? '<span class="text-[11px] font-bold text-amber-700 sm:block sm:mt-0.5">📍 本週進度</span>' : ''}
           </div>
-          ${week.id !== 'WPENDING' ? `<button onclick="archiveWeek(${wIdx})" class="sm:mt-2 text-[11px] bg-white hover:bg-slate-100 border border-slate-300 px-2 py-1 rounded shadow-sm transition shrink-0">📦 歸檔</button>` : ''}
+          <div class="flex flex-row sm:flex-col items-center sm:items-stretch gap-1.5 sm:mt-2 shrink-0">
+            <button onclick="openAddModal(${wIdx})" class="text-[11px] bg-emerald-50 hover:bg-emerald-600 text-emerald-700 hover:text-white border border-emerald-300 px-2 py-1 rounded shadow-sm transition font-medium">➕ 新增</button>
+            ${week.id !== 'WPENDING' ? `<button onclick="archiveWeek(${wIdx})" class="text-[11px] bg-white hover:bg-slate-100 border border-slate-300 px-2 py-1 rounded shadow-sm transition">📦 歸檔</button>` : ''}
+          </div>
         `;
 
         const midCol = document.createElement('div');
         midCol.className = 'w-full sm:w-[var(--col2-w)] sm:px-3 shrink-0 space-y-1.5 border-b sm:border-b-0 sm:border-r border-slate-200 pb-3 sm:pb-0 event-drop-zone min-h-[45px] rounded';
-        midCol.setAttribute('data-week-id', week.id);
         midCol.ondragover = handleDragOver;
-        midCol.ondragleave = handleDragLeave;
-        midCol.ondrop = (e) => handleDropOnWeekEvent(e, week.id);
+        midCol.ondrop = e => handleDropOnWeekEvent(e, week.id);
 
-        if (filteredEvents.length === 0) {
+        if (!filteredEvents.length) {
           midCol.innerHTML = `<div class="text-xs text-slate-400 italic pointer-events-none p-2 border border-dashed border-slate-200 rounded-lg">（拖拉事件至此）</div>`;
         } else {
           filteredEvents.forEach(ev => {
             const evDiv = document.createElement('div');
             evDiv.className = 'event-item text-xs bg-white border border-slate-200 rounded-lg px-2.5 py-1.5 shadow-sm flex items-start justify-between gap-2 group hover:border-amber-300 transition';
-            evDiv.setAttribute('draggable', 'true');
+            evDiv.draggable = true;
             evDiv.setAttribute('data-event-id', ev.id);
-            evDiv.ondragstart = (e) => handleDragStart(e, 'event', ev.id, week.id);
+            evDiv.ondragstart = e => handleDragStart(e, 'event', ev.id, week.id);
             evDiv.ondragend = handleDragEnd;
-
-            const contentWrap = document.createElement('div');
-            contentWrap.className = 'flex items-start gap-1.5 flex-1 cursor-pointer hover:opacity-70 transition min-w-0';
-            contentWrap.onclick = () => openEditModal('event', ev.id, week.id);
-            contentWrap.innerHTML = `
-              <span class="tag-badge border shrink-0 ${getTagStyle(ev.tag)}">${escapeHtml(ev.tag)}</span>
-              <span class="text-slate-800 leading-snug break-words">${escapeHtml(ev.text)}${ev.details ? '<span title="有詳細說明" class="text-[10px] ml-1">📝</span>' : ''}</span>
-            `;
-
-            const actionsWrap = document.createElement('div');
-            actionsWrap.className = 'flex items-center gap-1 opacity-0 group-hover:opacity-100 shrink-0';
-            const delBtn = document.createElement('button');
-            delBtn.className = 'text-slate-400 hover:text-rose-600 px-1 transition';
-            delBtn.textContent = '✕';
-            delBtn.onclick = () => deleteEvent(week.id, ev.id);
-            actionsWrap.appendChild(delBtn);
-
-            evDiv.appendChild(contentWrap);
-            evDiv.appendChild(actionsWrap);
+            evDiv.innerHTML = `
+              <div class="flex items-start gap-1.5 flex-1 cursor-pointer hover:opacity-70 transition min-w-0" onclick="openEditModal('event','${escapeHtml(ev.id)}','${escapeHtml(week.id)}')">
+                <span class="tag-badge border shrink-0 ${getTagStyle(ev.tag)}">${escapeHtml(ev.tag)}</span>
+                <span class="text-slate-800 leading-snug break-words">${escapeHtml(ev.text)}${ev.details ? '<span title="有詳細說明" class="text-[10px] ml-1">📝</span>' : ''}</span>
+              </div>
+              <div class="flex items-center gap-1 opacity-0 group-hover:opacity-100 shrink-0">
+                <button onclick="deleteEvent('${escapeHtml(week.id)}','${escapeHtml(ev.id)}')" class="text-slate-400 hover:text-rose-600 px-1 transition">✕</button>
+              </div>`;
             midCol.appendChild(evDiv);
           });
         }
 
         const rightCol = document.createElement('div');
         rightCol.className = 'flex-1 sm:pl-3 space-y-1.5 min-w-0 min-h-[45px] pb-2 rounded task-drop-zone';
-        rightCol.setAttribute('data-week-id', week.id);
         rightCol.ondragover = handleDragOver;
-        rightCol.ondragleave = handleDragLeave;
-        rightCol.ondrop = (e) => handleDropOnWeekTask(e, week.id);
+        rightCol.ondrop = e => handleDropOnWeekTask(e, week.id);
 
-        if (filteredTasks.length === 0) {
+        if (!filteredTasks.length) {
           rightCol.innerHTML = `<div class="text-xs text-slate-400 italic pointer-events-none p-2 border border-dashed border-slate-200 rounded-lg">（拖拉任務至此）</div>`;
         } else {
           filteredTasks.forEach(task => {
             const taskDiv = document.createElement('div');
             taskDiv.className = `task-item text-xs rounded-lg px-2.5 py-1.5 border flex items-start justify-between gap-2 group transition ${task.done ? 'bg-slate-50 border-slate-200 opacity-60' : 'bg-white border-slate-200 shadow-sm hover:border-amber-300'}`;
-            taskDiv.setAttribute('draggable', 'true');
+            taskDiv.draggable = true;
             taskDiv.setAttribute('data-task-id', task.id);
-            taskDiv.ondragstart = (e) => handleDragStart(e, 'task', task.id, week.id);
+            taskDiv.ondragstart = e => handleDragStart(e, 'task', task.id, week.id);
             taskDiv.ondragend = handleDragEnd;
-
-            const leftPart = document.createElement('div');
-            leftPart.className = 'flex items-start gap-2 flex-1 min-w-0';
-
-            const checkbox = document.createElement('input');
-            checkbox.type = 'checkbox';
-            checkbox.checked = Boolean(task.done);
-            checkbox.className = 'mt-0.5 rounded text-emerald-600 cursor-pointer shrink-0';
-            checkbox.onchange = (e) => {
-              e.stopPropagation();
-              toggleTaskDone(week.id, task.id);
-            };
-
-            const textPart = document.createElement('div');
-            textPart.className = 'flex items-start gap-1.5 flex-1 cursor-pointer hover:opacity-80 transition min-w-0';
-            textPart.onclick = () => openEditModal('task', task.id, week.id);
-            textPart.innerHTML = `
-              <span class="tag-badge border shrink-0 ${getTagStyle(task.tag)} ${task.done ? 'grayscale opacity-60' : ''}">${escapeHtml(task.tag)}</span>
-              <span class="leading-snug break-words ${task.done ? 'text-slate-500 line-through decoration-slate-500' : 'text-slate-800'}">${escapeHtml(task.text)}${task.details ? '<span title="有詳細說明" class="text-[10px] ml-1 no-underline inline-block">📝</span>' : ''}</span>
-            `;
-
-            leftPart.appendChild(checkbox);
-            leftPart.appendChild(textPart);
-
-            const rightActions = document.createElement('div');
-            rightActions.className = 'flex items-center gap-1 opacity-0 group-hover:opacity-100 shrink-0';
-
-            const pushBtn = document.createElement('button');
-            pushBtn.title = '順延';
-            pushBtn.className = 'text-[11px] bg-slate-100 hover:bg-amber-100 px-1.5 py-0.5 rounded transition';
-            pushBtn.textContent = '⤵';
-            pushBtn.onclick = () => pushTaskNextWeek(week.id, task.id);
-
-            const delBtn = document.createElement('button');
-            delBtn.className = 'text-slate-400 hover:text-rose-600 px-1 transition';
-            delBtn.textContent = '✕';
-            delBtn.onclick = () => deleteTask(week.id, task.id);
-
-            rightActions.appendChild(pushBtn);
-            rightActions.appendChild(delBtn);
-
-            taskDiv.appendChild(leftPart);
-            taskDiv.appendChild(rightActions);
+            taskDiv.innerHTML = `
+              <div class="flex items-start gap-2 flex-1 min-w-0">
+                <input type="checkbox" ${task.done ? 'checked' : ''} onchange="event.stopPropagation();toggleTaskDone('${escapeHtml(week.id)}','${escapeHtml(task.id)}')" class="mt-0.5 rounded text-emerald-600 cursor-pointer shrink-0">
+                <div class="flex items-start gap-1.5 flex-1 cursor-pointer hover:opacity-80 transition min-w-0" onclick="openEditModal('task','${escapeHtml(task.id)}','${escapeHtml(week.id)}')">
+                  <span class="tag-badge border shrink-0 ${getTagStyle(task.tag)} ${task.done ? 'grayscale opacity-60' : ''}">${escapeHtml(task.tag)}</span>
+                  <span class="leading-snug break-words ${task.done ? 'text-slate-500 line-through decoration-slate-500' : 'text-slate-800'}">${escapeHtml(task.text)}${task.details ? '<span title="有詳細說明" class="text-[10px] ml-1 no-underline inline-block">📝</span>' : ''}</span>
+                </div>
+              </div>
+              <div class="flex items-center gap-1 opacity-0 group-hover:opacity-100 shrink-0">
+                <button onclick="pushTaskNextWeek('${escapeHtml(week.id)}','${escapeHtml(task.id)}')" title="順延" class="text-[11px] bg-slate-100 hover:bg-amber-100 px-1.5 py-0.5 rounded transition">⤵</button>
+                <button onclick="deleteTask('${escapeHtml(week.id)}','${escapeHtml(task.id)}')" class="text-slate-400 hover:text-rose-600 px-1 transition">✕</button>
+              </div>`;
             rightCol.appendChild(taskDiv);
           });
         }
 
-        row.appendChild(leftCol);
-        row.appendChild(midCol);
-        row.appendChild(rightCol);
+        row.appendChild(leftCol); row.appendChild(midCol); row.appendChild(rightCol);
         container.appendChild(row);
       });
 
-      // 動態顯示「先補滿本季（補到 13 的倍數）」或「新增下一季（13 週）」
       const stepInfo = getNextQuarterStepInfo();
       const addRow = document.createElement('div');
       addRow.className = 'p-3 flex justify-center bg-slate-50 hover:bg-slate-100 transition cursor-pointer border-t border-slate-200';
       addRow.onclick = addNewQuarter;
-      const btnLabel = stepInfo.isFill
-        ? `➕ 補滿本季至 W${stepInfo.targetWeekNum} (自動補齊 ${stepInfo.count} 週，再按一次新增下一季)`
-        : `➕ 新增下一季 (自動推算 13 週)`;
-      addRow.innerHTML = `<span class="text-sm font-bold text-indigo-600 flex items-center gap-1">${btnLabel}</span>`;
+      addRow.innerHTML = `<span class="text-sm font-bold text-indigo-600 flex items-center gap-1">${stepInfo.isFill ? `➕ 補滿本季至 W${stepInfo.targetWeekNum} (自動補齊 ${stepInfo.count} 週，再按一次新增下一季)` : `➕ 新增下一季 (自動推算 13 週)`}</span>`;
       container.appendChild(addRow);
     }
 
     function openEditModal(type, id, weekId = null) {
       editingItemInfo = { type, id, weekId };
       let item = null;
-      if (type === 'task') {
-        const container = appData.weeks.find(w => w.id === weekId) || appData.history.find(h => h.id === weekId || h.weekNum === weekId);
-        item = container?.tasks.find(t => t.id === id);
-      } else if (type === 'event') {
-        const container = appData.weeks.find(w => w.id === weekId) || appData.history.find(h => h.id === weekId || h.weekNum === weekId);
-        item = container?.events.find(e => e.id === id);
-      } else if (type === 'backlog') {
-        item = appData.backlog.find(b => b.id === id);
-      }
+      if (type === 'task' || type === 'event') {
+        const c = appData.weeks.find(w => w.id === weekId) || appData.history.find(h => h.id === weekId || h.weekNum === weekId);
+        item = (type === 'task' ? c?.tasks : c?.events)?.find(x => x.id === id);
+      } else if (type === 'backlog') item = appData.backlog.find(b => b.id === id);
       if (!item) return;
-
       populateCategorySelects(item.tag || '其他');
       document.getElementById('edit-modal-text').value = item.text || '';
       document.getElementById('edit-modal-details').value = item.details || '';
       toggleModalUI('edit-modal', 'edit-modal-box', true);
     }
-
-    function closeEditModal() {
-      toggleModalUI('edit-modal', 'edit-modal-box', false);
-      setTimeout(() => { editingItemInfo = null; }, 200);
-    }
-
+    function closeEditModal() { toggleModalUI('edit-modal', 'edit-modal-box', false); setTimeout(() => { editingItemInfo = null; }, 200); }
     function saveEditModal() {
       if (!editingItemInfo) return;
       const newTag = document.getElementById('edit-modal-tag').value;
       const newText = document.getElementById('edit-modal-text').value.trim();
       const newDetails = document.getElementById('edit-modal-details').value.trim();
-      if (!newText) { showToast('標題內容不能為空', 'error'); return; }
-
+      if (!newText) return showToast('標題內容不能為空', 'error');
       let item = null;
-      if (editingItemInfo.type === 'task') {
-        const container = appData.weeks.find(w => w.id === editingItemInfo.weekId) || appData.history.find(h => h.id === editingItemInfo.weekId || h.weekNum === editingItemInfo.weekId);
-        item = container?.tasks.find(t => t.id === editingItemInfo.id);
-      } else if (editingItemInfo.type === 'event') {
-        const container = appData.weeks.find(w => w.id === editingItemInfo.weekId) || appData.history.find(h => h.id === editingItemInfo.weekId || h.weekNum === editingItemInfo.weekId);
-        item = container?.events.find(e => e.id === editingItemInfo.id);
-      } else if (editingItemInfo.type === 'backlog') {
-        item = appData.backlog.find(b => b.id === editingItemInfo.id);
-      }
-
-      if (item) {
-        item.tag = newTag;
-        item.text = newText;
-        item.details = newDetails;
-        saveData();
-        renderAll();
-        closeEditModal();
-        showToast('✅ 更新成功');
-      }
+      if (editingItemInfo.type === 'task' || editingItemInfo.type === 'event') {
+        const c = appData.weeks.find(w => w.id === editingItemInfo.weekId) || appData.history.find(h => h.id === editingItemInfo.weekId || h.weekNum === editingItemInfo.weekId);
+        item = (editingItemInfo.type === 'task' ? c?.tasks : c?.events)?.find(x => x.id === editingItemInfo.id);
+      } else if (editingItemInfo.type === 'backlog') item = appData.backlog.find(b => b.id === editingItemInfo.id);
+      if (item) { item.tag = newTag; item.text = newText; item.details = newDetails; saveData(); renderAll(); closeEditModal(); showToast('✅ 更新成功'); }
     }
 
-    function toggleTaskDone(weekId, taskId) {
-      const week = appData.weeks.find(w => w.id === weekId);
-      const task = week?.tasks.find(t => t.id === taskId);
-      if (task) {
-        task.done = !task.done;
-        saveData();
-        renderRollingTable();
-      }
+    function toggleTaskDone(wId, tId) {
+      const t = appData.weeks.find(w => w.id === wId)?.tasks.find(x => x.id === tId);
+      if (t) { t.done = !t.done; saveData(); renderRollingTable(); }
     }
-
-    function pushTaskNextWeek(weekId, taskId) {
-      const wIdx = appData.weeks.findIndex(w => w.id === weekId);
+    function pushTaskNextWeek(wId, tId) {
+      const wIdx = appData.weeks.findIndex(w => w.id === wId);
       if (wIdx === -1 || wIdx >= appData.weeks.length - 1) return;
-      const tIdx = appData.weeks[wIdx].tasks.findIndex(t => t.id === taskId);
+      const tIdx = appData.weeks[wIdx].tasks.findIndex(t => t.id === tId);
       if (tIdx === -1) return;
       const [task] = appData.weeks[wIdx].tasks.splice(tIdx, 1);
       appData.weeks[wIdx + 1].tasks.unshift(task);
-      saveData();
-      renderRollingTable();
-      showToast('已順延至下一列');
+      saveData(); renderRollingTable(); showToast('已順延至下一列');
     }
+    function deleteTask(wId, tId) { const w = appData.weeks.find(x => x.id === wId); if (w) { w.tasks = w.tasks.filter(t => t.id !== tId); saveData(); renderRollingTable(); } }
+    function deleteEvent(wId, eId) { const w = appData.weeks.find(x => x.id === wId); if (w) { w.events = w.events.filter(e => e.id !== eId); saveData(); renderRollingTable(); } }
 
-    function deleteTask(wId, tId) {
-      const w = appData.weeks.find(x => x.id === wId);
-      if (w) {
-        w.tasks = w.tasks.filter(t => t.id !== tId);
-        saveData();
-        renderRollingTable();
-      }
-    }
-
-    function deleteEvent(wId, eId) {
-      const w = appData.weeks.find(x => x.id === wId);
-      if (w) {
-        w.events = w.events.filter(e => e.id !== eId);
-        saveData();
-        renderRollingTable();
-      }
-    }
-
-    // 智慧新增下一季：若目前最後一週非 13 的倍數，先補齊到最近的 13 倍數週；再按一次才新增完整 13 週
     function addNewQuarter() {
       const realWeeks = appData.weeks.filter(w => w.id !== 'WPENDING');
       const stepInfo = getNextQuarterStepInfo();
-      const weeksToAdd = stepInfo.count;
-
-      let lastWeek = realWeeks.length > 0 ? realWeeks[realWeeks.length - 1] : null;
-      if (!lastWeek) {
-        const mon = getMondayOfDate(new Date());
-        mon.setDate(mon.getDate() - 7);
-        lastWeek = {
-          weekNum: String(getISOWeekNumber(mon)),
-          date: formatDateYMD(mon)
-        };
-      }
-
+      let lastWeek = realWeeks[realWeeks.length - 1];
+      if (!lastWeek) { const mon = getMondayOfDate(new Date()); mon.setDate(mon.getDate() - 7); lastWeek = { weekNum: String(getISOWeekNumber(mon)), date: formatDateYMD(mon) }; }
       const newWeeks = [];
-      for (let i = 0; i < weeksToAdd; i++) {
-        const lastWeekNum = parseInt(lastWeek.weekNum, 10);
-        const nextWeekNum = isNaN(lastWeekNum) ? 1 : (lastWeekNum >= 52 ? 1 : lastWeekNum + 1);
-
-        let nextDateObj = parseDateStrToObj(lastWeek.date);
-        if (!nextDateObj) {
-          nextDateObj = getMondayOfDate(new Date());
-        }
-        nextDateObj.setDate(nextDateObj.getDate() + 7);
-        const nextDateStr = formatDateYMD(nextDateObj);
-
-        const newWeek = {
-          id: genId(`W${nextWeekNum}`),
-          weekNum: String(nextWeekNum),
-          date: nextDateStr,
-          isCurrent: false,
-          events: [],
-          tasks: []
-        };
-
-        newWeeks.push(newWeek);
-        lastWeek = newWeek;
+      for (let i = 0; i < stepInfo.count; i++) {
+        const lwNum = parseInt(lastWeek.weekNum, 10);
+        const nextNum = isNaN(lwNum) ? 1 : (lwNum >= 52 ? 1 : lwNum + 1);
+        const nextD = parseDateStrToObj(lastWeek.date) || getMondayOfDate(new Date());
+        nextD.setDate(nextD.getDate() + 7);
+        const nw = { id: genId(`W${nextNum}`), weekNum: String(nextNum), date: formatDateYMD(nextD), isCurrent: false, events: [], tasks: [] };
+        newWeeks.push(nw); lastWeek = nw;
       }
-
-      const pendingIdx = appData.weeks.findIndex(w => w.id === 'WPENDING');
-      if (pendingIdx !== -1) {
-        appData.weeks.splice(pendingIdx, 0, ...newWeeks);
-      } else {
-        appData.weeks.push(...newWeeks);
-      }
-
-      syncCurrentWeekByDeviceDate();
-      saveData();
-      renderRollingTable();
-
-      if (stepInfo.isFill) {
-        showToast(`✅ 已先補滿本季（新增 ${weeksToAdd} 週至 W${stepInfo.targetWeekNum}）！再按一次即可新增下一季。`);
-      } else {
-        showToast(`✅ 已新增下一季 (13 週) 排程！`);
-      }
+      const pIdx = appData.weeks.findIndex(w => w.id === 'WPENDING');
+      if (pIdx !== -1) appData.weeks.splice(pIdx, 0, ...newWeeks);
+      else appData.weeks.push(...newWeeks);
+      syncCurrentWeekByDeviceDate(); saveData(); renderRollingTable();
+      showToast(stepInfo.isFill ? `✅ 已先補滿本季（新增 ${stepInfo.count} 週至 W${stepInfo.targetWeekNum}）！` : `✅ 已新增下一季 (13 週) 排程！`);
     }
 
     function archiveWeek(wIdx) {
       const week = appData.weeks[wIdx];
       if (!week || week.id === 'WPENDING') return;
-      const unfinished = week.tasks.filter(t => !t.done);
-      const finished = week.tasks.filter(t => t.done);
+      const unfinished = week.tasks.filter(t => !t.done), finished = week.tasks.filter(t => t.done);
       showConfirm('歸檔本週', `確定要將「W${week.weekNum}」歸檔嗎？\n未完成的 ${unfinished.length} 項任務將自動順延至下一週。`, () => {
-        if (wIdx + 1 < appData.weeks.length && unfinished.length > 0) {
-          appData.weeks[wIdx + 1].tasks = [...unfinished, ...appData.weeks[wIdx + 1].tasks];
-        }
-        appData.history.unshift({
-          id: week.id || genId('h'),
-          weekNum: week.weekNum,
-          date: week.date,
-          wasCurrent: Boolean(week.isCurrent),
-          events: cloneData(week.events),
-          tasks: cloneData(finished),
-          summary: ''
-        });
+        if (wIdx + 1 < appData.weeks.length && unfinished.length) appData.weeks[wIdx + 1].tasks = [...unfinished, ...appData.weeks[wIdx + 1].tasks];
+        appData.history.unshift({ id: week.id || genId('h'), weekNum: week.weekNum, date: week.date, wasCurrent: Boolean(week.isCurrent), events: cloneData(week.events), tasks: cloneData(finished), summary: '' });
         appData.weeks.splice(wIdx, 1);
-        syncCurrentWeekByDeviceDate();
-        saveData();
-        renderAll();
-        showToast('✅ 歸檔成功');
+        syncCurrentWeekByDeviceDate(); saveData(); renderAll(); showToast('✅ 歸檔成功');
       });
-    }
-
-    function parseWeekSortDate(dateStr, weekNum) {
-      const d = parseDateStrToObj(dateStr);
-      if (d) return d.getTime();
-      const num = parseInt(weekNum, 10);
-      return isNaN(num) ? 0 : num;
     }
 
     function restoreArchivedWeek(hIdx) {
-      const hItem = appData.history[hIdx];
-      if (!hItem) return;
-
-      showConfirm('復原已歸檔週次', `確定要將「W${hItem.weekNum} (${hItem.date})」復原回滾動週任務表嗎？`, () => {
-        const restoredEvents = (hItem.events || []).map((ev, i) => {
-          if (typeof ev === 'string') {
-            return { id: genId(`e-restored-${i}`), tag: '其他', text: ev, details: '' };
-          }
-          return {
-            id: ev.id || genId(`e-restored-${i}`),
-            tag: ev.tag || '其他',
-            text: ev.text || '',
-            details: ev.details || ''
-          };
-        });
-
-        const restoredTasks = (hItem.tasks || []).map((t, i) => {
-          if (typeof t === 'string') {
-            return { id: genId(`t-restored-${i}`), tag: '其他', text: t, details: '', done: true };
-          }
-          return {
-            id: t.id || genId(`t-restored-${i}`),
-            tag: t.tag || '其他',
-            text: t.text || '',
-            details: t.details || '',
-            done: t.done !== undefined ? Boolean(t.done) : true
-          };
-        });
-
-        if (restoredTasks.length === 0 && hItem.summary) {
-          restoredTasks.push({
-            id: genId('t-restored-sum'),
-            tag: '其他',
-            text: hItem.summary,
-            details: '',
-            done: true
-          });
-        }
-
-        const matchesToday = isWeekMatchingToday(hItem);
-        const shouldRestoreAsCurrent = matchesToday || (Boolean(hItem.wasCurrent) && !appData.weeks.some(w => w.isCurrent));
-
-        if (shouldRestoreAsCurrent) {
-          appData.weeks.forEach(w => { w.isCurrent = false; });
-        }
-
-        const restoredWeek = {
-          id: (hItem.id && !appData.weeks.some(w => w.id === hItem.id)) ? hItem.id : genId(`W${hItem.weekNum}`),
-          weekNum: String(hItem.weekNum),
-          date: hItem.date || '',
-          isCurrent: shouldRestoreAsCurrent,
-          events: restoredEvents,
-          tasks: restoredTasks
+      const h = appData.history[hIdx];
+      if (!h) return;
+      showConfirm('復原已歸檔週次', `確定要將「W${h.weekNum} (${h.date})」復原回任務表嗎？`, () => {
+        const matchesToday = isWeekMatchingToday(h);
+        const asCur = matchesToday || (Boolean(h.wasCurrent) && !appData.weeks.some(w => w.isCurrent));
+        if (asCur) appData.weeks.forEach(w => { w.isCurrent = false; });
+        const rw = {
+          id: (h.id && !appData.weeks.some(w => w.id === h.id)) ? h.id : genId(`W${h.weekNum}`),
+          weekNum: String(h.weekNum), date: h.date || '', isCurrent: asCur,
+          events: (h.events || []).map((ev, i) => typeof ev === 'string' ? { id: genId(`er-${i}`), tag: '其他', text: ev, details: '' } : { id: ev.id || genId(`er-${i}`), tag: ev.tag || '其他', text: ev.text || '', details: ev.details || '' }),
+          tasks: (h.tasks || []).map((t, i) => typeof t === 'string' ? { id: genId(`tr-${i}`), tag: '其他', text: t, details: '', done: true } : { id: t.id || genId(`tr-${i}`), tag: t.tag || '其他', text: t.text || '', details: t.details || '', done: t.done !== undefined ? Boolean(t.done) : true })
         };
-
-        const targetSortVal = parseWeekSortDate(restoredWeek.date, restoredWeek.weekNum);
-        let insertIdx = -1;
-        for (let i = 0; i < appData.weeks.length; i++) {
-          const w = appData.weeks[i];
-          if (w.id === 'WPENDING') {
-            insertIdx = i;
-            break;
-          }
-          const wSortVal = parseWeekSortDate(w.date, w.weekNum);
-          if (targetSortVal < wSortVal) {
-            insertIdx = i;
-            break;
-          }
-        }
-
-        if (insertIdx === -1) {
-          appData.weeks.push(restoredWeek);
-        } else {
-          appData.weeks.splice(insertIdx, 0, restoredWeek);
-        }
-
-        syncCurrentWeekByDeviceDate();
-        appData.history.splice(hIdx, 1);
-        saveData();
-        renderAll();
-        showToast(restoredWeek.isCurrent
-          ? `✅ 已復原 W${restoredWeek.weekNum} 並重新標記為「本週（當前基準）」！`
-          : `✅ 已將 W${restoredWeek.weekNum} 復原至滾動週任務表！`
-        );
+        const sortVal = d => { const o = parseDateStrToObj(d); return o ? o.getTime() : 0; };
+        const tVal = sortVal(rw.date);
+        let ins = appData.weeks.findIndex(w => w.id === 'WPENDING' || sortVal(w.date) > tVal);
+        if (ins === -1) appData.weeks.push(rw); else appData.weeks.splice(ins, 0, rw);
+        syncCurrentWeekByDeviceDate(); appData.history.splice(hIdx, 1); saveData(); renderAll();
+        showToast(rw.isCurrent ? `✅ 已復原 W${rw.weekNum} 並標記為本週！` : `✅ 已將 W${rw.weekNum} 復原至任務表！`);
       });
     }
-
-    let draggingElement = null;
 
     function handleDragStart(e, type, id, weekId = null) {
       e.dataTransfer.setData('text/plain', JSON.stringify({ type, id, weekId }));
       e.dataTransfer.effectAllowed = 'move';
-      draggingElement = e.target;
-      setTimeout(() => { e.target.classList.add('opacity-50', 'dragging'); }, 0);
+      setTimeout(() => e.target.classList.add('opacity-50', 'dragging'), 0);
     }
-
     function cleanupDragStyles() {
-      document.querySelectorAll('.drag-over').forEach(el => el.classList.remove('drag-over'));
-      document.querySelectorAll('.border-t-amber-500, .opacity-50, .dragging').forEach(el => el.classList.remove('border-t-amber-500', 'opacity-50', 'dragging'));
+      document.querySelectorAll('.drag-over,.border-t-amber-500,.opacity-50,.dragging').forEach(el => el.classList.remove('drag-over', 'border-t-amber-500', 'opacity-50', 'dragging'));
     }
-
-    function handleDragEnd() {
-      cleanupDragStyles();
-      draggingElement = null;
-    }
-
-    function getDragAfterElement(container, y, itemSelector) {
-      const draggableElements = [...container.querySelectorAll(`${itemSelector}:not(.dragging)`)];
-      return draggableElements.reduce((closest, child) => {
-        const box = child.getBoundingClientRect();
-        const offset = y - box.top - box.height / 2;
-        if (offset < 0 && offset > closest.offset) {
-          return { offset: offset, element: child };
-        } else {
-          return closest;
-        }
+    const handleDragEnd = () => cleanupDragStyles();
+    function getDragAfterElement(container, y, sel) {
+      return [...container.querySelectorAll(`${sel}:not(.dragging)`)].reduce((closest, child) => {
+        const box = child.getBoundingClientRect(), offset = y - box.top - box.height / 2;
+        return (offset < 0 && offset > closest.offset) ? { offset, element: child } : closest;
       }, { offset: Number.NEGATIVE_INFINITY }).element;
     }
-
     function handleDragOver(e) {
-      e.preventDefault();
-      e.dataTransfer.dropEffect = 'move';
-      const dropZone = e.currentTarget;
-      if (!dropZone.classList.contains('drag-over')) dropZone.classList.add('drag-over');
-
-      let afterElement = null;
-      if (dropZone.classList.contains('task-drop-zone')) {
-        afterElement = getDragAfterElement(dropZone, e.clientY, '.task-item');
-        document.querySelectorAll('.task-item').forEach(el => el.classList.remove('border-t-amber-500'));
-      } else if (dropZone.classList.contains('event-drop-zone')) {
-        afterElement = getDragAfterElement(dropZone, e.clientY, '.event-item');
-        document.querySelectorAll('.event-item').forEach(el => el.classList.remove('border-t-amber-500'));
-      } else if (dropZone.classList.contains('backlog-drop-zone')) {
-        afterElement = getDragAfterElement(dropZone, e.clientY, '.backlog-item');
-        document.querySelectorAll('.backlog-item').forEach(el => el.classList.remove('border-t-amber-500'));
+      e.preventDefault(); e.dataTransfer.dropEffect = 'move';
+      const dz = e.currentTarget; dz.classList.add('drag-over');
+      const map = [['task-drop-zone', '.task-item'], ['event-drop-zone', '.event-item'], ['backlog-drop-zone', '.backlog-item']];
+      for (const [cls, sel] of map) {
+        if (dz.classList.contains(cls)) {
+          document.querySelectorAll(sel).forEach(el => el.classList.remove('border-t-amber-500'));
+          const after = getDragAfterElement(dz, e.clientY, sel);
+          if (after) after.classList.add('border-t-amber-500');
+        }
       }
-      if (afterElement) afterElement.classList.add('border-t-amber-500');
     }
 
-    function handleDragLeave() {}
+    function extractDraggedItem(data) {
+      if (data.type === 'task' || data.type === 'event') {
+        const sw = appData.weeks.find(w => w.id === data.weekId);
+        const list = data.type === 'task' ? sw?.tasks : sw?.events;
+        const idx = list ? list.findIndex(x => x.id === data.id) : -1;
+        if (idx > -1) return { item: list.splice(idx, 1)[0], sourceWeekId: sw.id, oldIdx: idx };
+      } else if (data.type === 'backlog') {
+        const idx = appData.backlog.findIndex(b => b.id === data.id);
+        if (idx > -1) return { item: appData.backlog.splice(idx, 1)[0], oldIdx: idx };
+      }
+      return null;
+    }
 
     function handleDropOnWeekTask(e, targetWeekId) {
       e.preventDefault();
-      const dataStr = e.dataTransfer.getData('text/plain');
-      if (!dataStr) { cleanupDragStyles(); return; }
+      const raw = e.dataTransfer.getData('text/plain'); cleanupDragStyles();
+      if (!raw) return;
       try {
-        const data = JSON.parse(dataStr);
-        const afterElement = getDragAfterElement(e.currentTarget, e.clientY, '.task-item');
-        let targetIndex = -1;
-        const targetWeek = appData.weeks.find(w => w.id === targetWeekId);
-        if (targetWeek && afterElement) {
-          const afterId = afterElement.getAttribute('data-task-id');
-          targetIndex = targetWeek.tasks.findIndex(t => t.id === afterId);
-        }
-        cleanupDragStyles();
-        moveItemToWeekTask(data, targetWeekId, targetIndex);
-      } catch (err) { cleanupDragStyles(); }
+        const data = JSON.parse(raw), tw = appData.weeks.find(w => w.id === targetWeekId);
+        if (!tw) return;
+        const afterEl = getDragAfterElement(e.currentTarget, e.clientY, '.task-item');
+        const afterId = afterEl?.getAttribute('data-task-id');
+        const ext = extractDraggedItem(data);
+        if (!ext) return;
+        const newObj = data.type === 'task' ? ext.item : { id: genId('t'), tag: ext.item.tag || '其他', text: ext.item.text, details: ext.item.details || '', done: false };
+        const tIdx = afterId ? tw.tasks.findIndex(t => t.id === afterId) : -1;
+        if (tIdx === -1) tw.tasks.push(newObj); else tw.tasks.splice(tIdx, 0, newObj);
+        saveData(); renderAll();
+      } catch {}
     }
 
     function handleDropOnWeekEvent(e, targetWeekId) {
       e.preventDefault();
-      const dataStr = e.dataTransfer.getData('text/plain');
-      if (!dataStr) { cleanupDragStyles(); return; }
+      const raw = e.dataTransfer.getData('text/plain'); cleanupDragStyles();
+      if (!raw) return;
       try {
-        const data = JSON.parse(dataStr);
-        const afterElement = getDragAfterElement(e.currentTarget, e.clientY, '.event-item');
-        let targetIndex = -1;
-        const targetWeek = appData.weeks.find(w => w.id === targetWeekId);
-        if (targetWeek && afterElement) {
-          const afterId = afterElement.getAttribute('data-event-id');
-          targetIndex = targetWeek.events.findIndex(ev => ev.id === afterId);
-        }
-        cleanupDragStyles();
-        moveItemToWeekEvent(data, targetWeekId, targetIndex);
-      } catch (err) { cleanupDragStyles(); }
+        const data = JSON.parse(raw), tw = appData.weeks.find(w => w.id === targetWeekId);
+        if (!tw) return;
+        const afterEl = getDragAfterElement(e.currentTarget, e.clientY, '.event-item');
+        const afterId = afterEl?.getAttribute('data-event-id');
+        const ext = extractDraggedItem(data);
+        if (!ext) return;
+        const newObj = data.type === 'event' ? ext.item : { id: genId('e'), tag: ext.item.tag || '其他', text: ext.item.text, details: ext.item.details || '' };
+        const tIdx = afterId ? tw.events.findIndex(ev => ev.id === afterId) : -1;
+        if (tIdx === -1) tw.events.push(newObj); else tw.events.splice(tIdx, 0, newObj);
+        saveData(); renderAll();
+      } catch {}
     }
 
     function handleDropOnBacklog(e, targetPriority) {
       e.preventDefault();
-      const dataStr = e.dataTransfer.getData('text/plain');
-      if (!dataStr) { cleanupDragStyles(); return; }
+      const raw = e.dataTransfer.getData('text/plain'); cleanupDragStyles();
+      if (!raw) return;
       try {
-        const data = JSON.parse(dataStr);
-        const afterElement = getDragAfterElement(e.currentTarget, e.clientY, '.backlog-item');
-        let targetIndex = -1;
-        if (afterElement) {
-          const afterId = afterElement.getAttribute('data-backlog-id');
-          targetIndex = appData.backlog.findIndex(b => b.id === afterId);
-        }
-        cleanupDragStyles();
-        moveItemToBacklog(data, targetPriority, targetIndex);
-      } catch (err) { cleanupDragStyles(); }
-    }
-
-    function moveItemToWeekTask(data, targetWeekId, targetIndex = -1) {
-      const targetWeek = appData.weeks.find(w => w.id === targetWeekId);
-      if (!targetWeek) return;
-      let extractedItem = null;
-
-      if (data.type === 'task') {
-        const sourceWeek = appData.weeks.find(w => w.id === data.weekId);
-        if (!sourceWeek) return;
-        const taskIdx = sourceWeek.tasks.findIndex(t => t.id === data.id);
-        if (taskIdx > -1) {
-          extractedItem = sourceWeek.tasks[taskIdx];
-          if (sourceWeek.id === targetWeek.id && taskIdx < targetIndex) targetIndex--;
-          sourceWeek.tasks.splice(taskIdx, 1);
-        }
-      } else if (data.type === 'backlog') {
-        const bIdx = appData.backlog.findIndex(b => b.id === data.id);
-        if (bIdx > -1) {
-          const [bItem] = appData.backlog.splice(bIdx, 1);
-          extractedItem = { id: genId('t'), tag: bItem.tag || '其他', text: bItem.text, details: bItem.details || '', done: false };
-        }
-      } else if (data.type === 'event') {
-        const sourceWeek = appData.weeks.find(w => w.id === data.weekId);
-        if (!sourceWeek) return;
-        const evIdx = sourceWeek.events.findIndex(ev => ev.id === data.id);
-        if (evIdx > -1) {
-          const evObj = sourceWeek.events[evIdx];
-          extractedItem = { id: genId('t'), tag: evObj.tag, text: evObj.text, details: evObj.details || '', done: false };
-          sourceWeek.events.splice(evIdx, 1);
-        }
-      }
-
-      if (extractedItem) {
-        if (targetIndex === -1) targetWeek.tasks.push(extractedItem);
-        else targetWeek.tasks.splice(targetIndex, 0, extractedItem);
-        saveData();
-        renderAll();
-      }
-    }
-
-    function moveItemToWeekEvent(data, targetWeekId, targetIndex = -1) {
-      const targetWeek = appData.weeks.find(w => w.id === targetWeekId);
-      if (!targetWeek) return;
-      let extractedItem = null;
-
-      if (data.type === 'event') {
-        const sourceWeek = appData.weeks.find(w => w.id === data.weekId);
-        if (!sourceWeek) return;
-        const evIdx = sourceWeek.events.findIndex(ev => ev.id === data.id);
-        if (evIdx > -1) {
-          extractedItem = sourceWeek.events[evIdx];
-          if (sourceWeek.id === targetWeek.id && evIdx < targetIndex) targetIndex--;
-          sourceWeek.events.splice(evIdx, 1);
-        }
-      } else if (data.type === 'task') {
-        const sourceWeek = appData.weeks.find(w => w.id === data.weekId);
-        if (!sourceWeek) return;
-        const taskIdx = sourceWeek.tasks.findIndex(t => t.id === data.id);
-        if (taskIdx > -1) {
-          const task = sourceWeek.tasks[taskIdx];
-          extractedItem = { id: genId('e'), tag: task.tag, text: task.text, details: task.details || '' };
-          sourceWeek.tasks.splice(taskIdx, 1);
-        }
-      } else if (data.type === 'backlog') {
-        const bIdx = appData.backlog.findIndex(b => b.id === data.id);
-        if (bIdx > -1) {
-          const [bItem] = appData.backlog.splice(bIdx, 1);
-          extractedItem = { id: genId('e'), tag: bItem.tag || '其他', text: bItem.text, details: bItem.details || '' };
-        }
-      }
-
-      if (extractedItem) {
-        if (targetIndex === -1) targetWeek.events.push(extractedItem);
-        else targetWeek.events.splice(targetIndex, 0, extractedItem);
-        saveData();
-        renderAll();
-      }
-    }
-
-    function moveItemToBacklog(data, targetPriority, targetIndex = -1) {
-      let extractedItem = null;
-
-      if (data.type === 'backlog') {
-        const bIdx = appData.backlog.findIndex(b => b.id === data.id);
-        if (bIdx > -1) {
-          extractedItem = appData.backlog[bIdx];
-          extractedItem.priority = targetPriority;
-          if (bIdx < targetIndex) targetIndex--;
-          appData.backlog.splice(bIdx, 1);
-        }
-      } else if (data.type === 'task') {
-        const sourceWeek = appData.weeks.find(w => w.id === data.weekId);
-        if (!sourceWeek) return;
-        const taskIdx = sourceWeek.tasks.findIndex(t => t.id === data.id);
-        if (taskIdx > -1) {
-          const [task] = sourceWeek.tasks.splice(taskIdx, 1);
-          extractedItem = { id: genId('b'), priority: targetPriority, tag: task.tag, text: task.text, details: task.details || '' };
-        }
-      } else if (data.type === 'event') {
-        const sourceWeek = appData.weeks.find(w => w.id === data.weekId);
-        if (!sourceWeek) return;
-        const evIdx = sourceWeek.events.findIndex(ev => ev.id === data.id);
-        if (evIdx > -1) {
-          const evObj = sourceWeek.events[evIdx];
-          extractedItem = { id: genId('b'), priority: targetPriority, tag: evObj.tag, text: evObj.text, details: evObj.details || '' };
-          sourceWeek.events.splice(evIdx, 1);
-        }
-      }
-
-      if (extractedItem) {
-        if (targetIndex === -1) appData.backlog.push(extractedItem);
-        else appData.backlog.splice(targetIndex, 0, extractedItem);
-        saveData();
-        renderAll();
-      }
+        const data = JSON.parse(raw);
+        const afterEl = getDragAfterElement(e.currentTarget, e.clientY, '.backlog-item');
+        const afterId = afterEl?.getAttribute('data-backlog-id');
+        const ext = extractDraggedItem(data);
+        if (!ext) return;
+        const newObj = { id: data.type === 'backlog' ? ext.item.id : genId('b'), priority: targetPriority, tag: ext.item.tag || '其他', text: ext.item.text, details: ext.item.details || '' };
+        const tIdx = afterId ? appData.backlog.findIndex(b => b.id === afterId) : -1;
+        if (tIdx === -1) appData.backlog.push(newObj); else appData.backlog.splice(tIdx, 0, newObj);
+        saveData(); renderAll();
+      } catch {}
     }
 
     function applyDrawerState() {
-      const drawer = document.getElementById('backlog-drawer');
-      const resizer = document.getElementById('resizer-backlog');
-      const toggleBtn = document.getElementById('btn-toggle-backlog');
-      if (!drawer || !resizer || !toggleBtn) return;
-
-      if (currentTab === 'rolling') toggleBtn.classList.remove('hide-drawer');
-      else toggleBtn.classList.add('hide-drawer');
-
-      if (currentTab === 'rolling' && layoutData.drawerOpen) {
-        drawer.classList.remove('hide-drawer');
-        resizer.classList.remove('hide-drawer');
-      } else {
-        drawer.classList.add('hide-drawer');
-        resizer.classList.add('hide-drawer');
-      }
+      const dr = document.getElementById('backlog-drawer'), rs = document.getElementById('resizer-backlog'), btn = document.getElementById('btn-toggle-backlog');
+      if (!dr || !rs || !btn) return;
+      btn.classList.toggle('hide-drawer', currentTab !== 'rolling');
+      const show = currentTab === 'rolling' && layoutData.drawerOpen;
+      dr.classList.toggle('hide-drawer', !show);
+      rs.classList.toggle('hide-drawer', !show);
     }
-
-    function toggleBacklogDrawer() {
-      layoutData.drawerOpen = !layoutData.drawerOpen;
-      saveLayout();
-      applyDrawerState();
-    }
+    function toggleBacklogDrawer() { layoutData.drawerOpen = !layoutData.drawerOpen; saveLayout(); applyDrawerState(); }
 
     function renderHistory() {
       const container = document.getElementById('history-container');
       if (!container) return;
       const kw = (document.getElementById('history-search').value || '').trim().toLowerCase();
-
-      const filteredWithIndex = appData.history
-        .map((h, originalIdx) => ({ h, originalIdx }))
-        .filter(({ h }) => {
-          if (!kw) return true;
-          const searchStr = `${h.date} ${h.summary || ''}`;
-          const evStr = h.events ? h.events.map(e => typeof e === 'string' ? e : `${e.text} ${e.tag || ''}`).join(' ') : '';
-          const taskStr = h.tasks ? h.tasks.map(t => typeof t === 'string' ? t : `${t.text} ${t.tag || ''}`).join(' ') : '';
-          return `${searchStr} ${evStr} ${taskStr}`.toLowerCase().includes(kw);
-        });
-
-      if (filteredWithIndex.length === 0) {
-        container.innerHTML = `<div class="bg-white rounded-xl border border-slate-200 p-8 text-center text-sm text-slate-400">目前沒有符合的歷史歸檔紀錄</div>`;
-        return;
-      }
-
-      container.innerHTML = filteredWithIndex.map(({ h, originalIdx }) => {
-        const hasObjectEvents = h.events && h.events.length > 0 && typeof h.events[0] === 'object';
-        const hasStringEvents = h.events && h.events.length > 0 && typeof h.events[0] === 'string';
-        const hIdForModal = escapeHtml(h.id || h.weekNum);
-
-        let eventsHtml = '';
-        if (hasObjectEvents) {
-          eventsHtml = h.events.map(ev => `
-            <div class="text-xs bg-white border border-slate-200 rounded-lg px-2.5 py-1.5 shadow-sm flex items-start gap-1.5 mb-1.5 cursor-pointer hover:border-amber-400 hover:shadow transition" onclick="openEditModal('event', '${escapeHtml(ev.id)}', '${hIdForModal}')">
-              <span class="tag-badge border shrink-0 ${getTagStyle(ev.tag || '其他')}">${escapeHtml(ev.tag || '其他')}</span>
-              <span class="text-slate-800">${escapeHtml(ev.text)}${ev.details ? '<span title="有詳細說明" class="text-[10px] ml-1">📝</span>' : ''}</span>
-            </div>
-          `).join('');
-        } else if (hasStringEvents) {
-          eventsHtml = h.events.map(ev => `<div class="text-xs text-slate-700 bg-white border border-slate-200 rounded-lg px-2.5 py-1.5 shadow-sm mb-1.5">${escapeHtml(ev)}</div>`).join('');
-        } else {
-          eventsHtml = '<div class="text-xs text-slate-400 italic p-2 border border-dashed border-slate-200 rounded-lg">（無事件）</div>';
-        }
-
-        let tasksHtml = '';
-        if (h.tasks && h.tasks.length > 0) {
-          tasksHtml = h.tasks.map(task => `
-            <div class="text-xs bg-slate-50 border border-slate-200 rounded-lg px-2.5 py-1.5 shadow-sm flex items-start gap-1.5 mb-1.5 cursor-pointer hover:border-amber-400 transition" onclick="openEditModal('task', '${escapeHtml(task.id)}', '${hIdForModal}')">
-              <span class="tag-badge border shrink-0 grayscale opacity-60 ${getTagStyle(task.tag || '其他')}">${escapeHtml(task.tag || '其他')}</span>
-              <span class="text-slate-500 line-through decoration-slate-500">${escapeHtml(task.text)}${task.details ? '<span title="有詳細說明" class="text-[10px] ml-1 no-underline inline-block">📝</span>' : ''}</span>
-            </div>
-          `).join('');
-        } else if (h.summary) {
-          tasksHtml = `<div class="text-xs text-slate-500 leading-relaxed bg-white border border-slate-200 rounded-lg px-2.5 py-1.5 shadow-sm">${escapeHtml(h.summary)}</div>`;
-        } else {
-          tasksHtml = '<div class="text-xs text-slate-400 italic p-2 border border-dashed border-slate-200 rounded-lg">（無完成任務）</div>';
-        }
-
+      const list = appData.history.map((h, i) => ({ h, i })).filter(({ h }) => {
+        if (!kw) return true;
+        const s = `${h.date} ${h.summary || ''} ${(h.events || []).map(e => e.text + ' ' + e.tag).join(' ')} ${(h.tasks || []).map(t => t.text + ' ' + t.tag).join(' ')}`;
+        return s.toLowerCase().includes(kw);
+      });
+      if (!list.length) { container.innerHTML = `<div class="bg-white rounded-xl border border-slate-200 p-8 text-center text-sm text-slate-400">目前沒有符合的歷史歸檔紀錄</div>`; return; }
+      container.innerHTML = list.map(({ h, i }) => {
+        const hid = escapeHtml(h.id || h.weekNum);
+        const evHtml = h.events?.length ? h.events.map(ev => `
+          <div class="text-xs bg-white border border-slate-200 rounded-lg px-2.5 py-1.5 shadow-sm flex items-start gap-1.5 mb-1.5 cursor-pointer hover:border-amber-400 transition" onclick="openEditModal('event','${escapeHtml(ev.id)}','${hid}')">
+            <span class="tag-badge border shrink-0 ${getTagStyle(ev.tag || '其他')}">${escapeHtml(ev.tag || '其他')}</span>
+            <span class="text-slate-800">${escapeHtml(ev.text)}${ev.details ? '<span class="text-[10px] ml-1">📝</span>' : ''}</span>
+          </div>`).join('') : '<div class="text-xs text-slate-400 italic p-2 border border-dashed border-slate-200 rounded-lg">（無事件）</div>';
+        const tkHtml = h.tasks?.length ? h.tasks.map(t => `
+          <div class="text-xs bg-slate-50 border border-slate-200 rounded-lg px-2.5 py-1.5 shadow-sm flex items-start gap-1.5 mb-1.5 cursor-pointer hover:border-amber-400 transition" onclick="openEditModal('task','${escapeHtml(t.id)}','${hid}')">
+            <span class="tag-badge border shrink-0 grayscale opacity-60 ${getTagStyle(t.tag || '其他')}">${escapeHtml(t.tag || '其他')}</span>
+            <span class="text-slate-500 line-through">${escapeHtml(t.text)}${t.details ? '<span class="text-[10px] ml-1 no-underline inline-block">📝</span>' : ''}</span>
+          </div>`).join('') : '<div class="text-xs text-slate-400 italic p-2 border border-dashed border-slate-200 rounded-lg">（無完成任務）</div>';
         return `
           <div class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden flex flex-col sm:flex-row p-4 gap-3 sm:gap-0 hover:bg-slate-50/80 transition">
             <div class="w-full sm:w-[var(--col1-w)] pr-2 shrink-0 flex flex-row sm:flex-col items-center sm:items-start justify-between sm:justify-start gap-2 sm:gap-1">
@@ -2479,16 +1493,11 @@
                 <span class="text-xs font-bold px-2 py-0.5 rounded bg-slate-200 text-slate-700">W${escapeHtml(h.weekNum)}</span>
                 <div class="text-sm font-bold text-slate-800 sm:mt-1">${escapeHtml(h.date)}</div>
               </div>
-              <button onclick="restoreArchivedWeek(${originalIdx})" class="sm:mt-2 text-[11px] bg-white hover:bg-amber-50 text-slate-700 hover:text-amber-900 border border-slate-300 hover:border-amber-400 px-2 py-1 rounded shadow-sm transition font-medium shrink-0">↩️ 復原此週</button>
+              <button onclick="restoreArchivedWeek(${i})" class="sm:mt-2 text-[11px] bg-white hover:bg-amber-50 text-slate-700 hover:text-amber-900 border border-slate-300 hover:border-amber-400 px-2 py-1 rounded shadow-sm transition font-medium shrink-0">↩️ 復原此週</button>
             </div>
-            <div class="w-full sm:w-[var(--col2-w)] sm:px-3 shrink-0 border-b sm:border-b-0 sm:border-r border-slate-200 pb-3 sm:pb-0 min-h-[45px]">
-              ${eventsHtml}
-            </div>
-            <div class="flex-1 sm:pl-3 min-w-0 min-h-[45px]">
-              ${tasksHtml}
-            </div>
-          </div>
-        `;
+            <div class="w-full sm:w-[var(--col2-w)] sm:px-3 shrink-0 border-b sm:border-b-0 sm:border-r border-slate-200 pb-3 sm:pb-0 min-h-[45px]">${evHtml}</div>
+            <div class="flex-1 sm:pl-3 min-w-0 min-h-[45px]">${tkHtml}</div>
+          </div>`;
       }).join('');
     }
 
@@ -2496,32 +1505,26 @@
       updateBacklogBadge();
       const cont = document.getElementById('backlog-list-container');
       if (!cont) return;
-      const highs = appData.backlog.filter(b => b.priority === 'high');
-      const lows = appData.backlog.filter(b => b.priority === 'low');
-
-      const genHTML = (title, color, items, priority) => `
-        <div class="backlog-drop-zone pb-4 rounded transition min-h-[80px]" ondragover="handleDragOver(event)" ondragleave="handleDragLeave(event)" ondrop="handleDropOnBacklog(event, '${priority}')">
+      const gen = (title, color, items, pri) => `
+        <div class="backlog-drop-zone pb-4 rounded transition min-h-[80px]" ondragover="handleDragOver(event)" ondrop="handleDropOnBacklog(event,'${pri}')">
           <div class="text-xs font-bold ${color} mb-2 flex items-center justify-between pointer-events-none">
-            <span>${title}</span>
-            <span class="text-[11px] font-normal">${items.length} 項</span>
+            <span>${title}</span><span class="text-[11px] font-normal">${items.length} 項</span>
           </div>
           <div class="space-y-1.5">
             ${items.map(i => `
-              <div draggable="true" data-backlog-id="${escapeHtml(i.id)}" ondragstart="handleDragStart(event, 'backlog', '${escapeHtml(i.id)}')" ondragend="handleDragEnd(event)" class="backlog-item bg-slate-50 hover:bg-white border border-slate-200 rounded-lg p-2 text-xs flex items-start justify-between gap-2 group shadow-sm transition">
-                <div class="flex items-start gap-1.5 flex-1 min-w-0 cursor-pointer hover:opacity-70 transition" onclick="openEditModal('backlog', '${escapeHtml(i.id)}')">
+              <div draggable="true" data-backlog-id="${escapeHtml(i.id)}" ondragstart="handleDragStart(event,'backlog','${escapeHtml(i.id)}')" ondragend="handleDragEnd()" class="backlog-item bg-slate-50 hover:bg-white border border-slate-200 rounded-lg p-2 text-xs flex items-start justify-between gap-2 group shadow-sm transition">
+                <div class="flex items-start gap-1.5 flex-1 min-w-0 cursor-pointer hover:opacity-70 transition" onclick="openEditModal('backlog','${escapeHtml(i.id)}')">
                   <span class="tag-badge border shrink-0 ${getTagStyle(i.tag || '其他')}">${escapeHtml(i.tag || '其他')}</span>
-                  <span class="text-slate-700 leading-snug break-words">${escapeHtml(i.text)}${i.details ? '<span title="有詳細說明" class="text-[10px] ml-1">📝</span>' : ''}</span>
+                  <span class="text-slate-700 leading-snug break-words">${escapeHtml(i.text)}${i.details ? '<span class="text-[10px] ml-1">📝</span>' : ''}</span>
                 </div>
-                <div class="flex gap-1 shrink-0 mt-0.5 opacity-0 group-hover:opacity-100 transition focus-within:opacity-100">
+                <div class="flex gap-1 shrink-0 mt-0.5 opacity-0 group-hover:opacity-100 transition">
                   <button onclick="moveBacklog('${escapeHtml(i.id)}')" title="排入本週" class="bg-indigo-50 hover:bg-indigo-600 text-indigo-700 hover:text-white px-1.5 py-0.5 rounded transition text-[11px]">⬅️</button>
                   <button onclick="delBacklog('${escapeHtml(i.id)}')" title="刪除" class="text-slate-400 hover:text-rose-600 px-1">✕</button>
                 </div>
-              </div>
-            `).join('')}
+              </div>`).join('')}
           </div>
-        </div>
-      `;
-      cont.innerHTML = genHTML('🔶 較重要', 'text-amber-800', highs, 'high') + genHTML('🔹 較不重要', 'text-slate-500', lows, 'low');
+        </div>`;
+      cont.innerHTML = gen('🔶 較重要', 'text-amber-800', appData.backlog.filter(b => b.priority === 'high'), 'high') + gen('🔹 較不重要', 'text-slate-500', appData.backlog.filter(b => b.priority === 'low'), 'low');
     }
 
     function moveBacklog(id) {
@@ -2529,140 +1532,89 @@
       if (idx === -1) return;
       const [item] = appData.backlog.splice(idx, 1);
       const cw = appData.weeks.find(w => w.isCurrent) || appData.weeks[0];
-      if (cw) {
-        cw.tasks.unshift({ id: genId('t'), tag: item.tag || '其他', text: item.text, details: item.details || '', done: false });
-      }
-      saveData();
-      renderBacklog();
-      renderRollingTable();
-      showToast('已排入待辦！');
+      if (cw) cw.tasks.unshift({ id: genId('t'), tag: item.tag || '其他', text: item.text, details: item.details || '', done: false });
+      saveData(); renderBacklog(); renderRollingTable(); showToast('已排入待辦！');
     }
-
-    function delBacklog(id) {
-      appData.backlog = appData.backlog.filter(b => b.id !== id);
-      saveData();
-      renderBacklog();
-    }
-
-    function updateBacklogBadge() {
-      const badge = document.getElementById('backlog-count-badge');
-      if (badge) badge.textContent = appData.backlog.length;
-    }
+    function delBacklog(id) { appData.backlog = appData.backlog.filter(b => b.id !== id); saveData(); renderBacklog(); }
+    function updateBacklogBadge() { const b = document.getElementById('backlog-count-badge'); if (b) b.textContent = appData.backlog.length; }
 
     function switchTab(tabName) {
       currentTab = tabName;
       ['rolling', 'history'].forEach(t => {
-        const viewEl = document.getElementById('view-' + t);
-        const tabEl = document.getElementById('tab-' + t);
-        if (viewEl) viewEl.classList.toggle('hidden', t !== tabName);
-        if (tabEl) {
-          tabEl.className = `tab-btn px-2.5 sm:px-3 py-1 rounded-md transition ${t === tabName ? 'bg-amber-500 text-slate-950 font-bold' : 'text-slate-300 hover:text-white'}`;
-        }
+        document.getElementById('view-' + t)?.classList.toggle('hidden', t !== tabName);
+        const btn = document.getElementById('tab-' + t);
+        if (btn) btn.className = `tab-btn px-2.5 sm:px-3 py-1 rounded-md transition ${t === tabName ? 'bg-amber-500 text-slate-950 font-bold' : 'text-slate-300 hover:text-white'}`;
       });
       applyDrawerState();
     }
 
-    function renderAll() {
-      renderHeaders();
-      renderFilterChips();
-      renderRollingTable();
-      renderBacklog();
-      renderBookmarks();
-      renderHistory();
-    }
+    function renderAll() { renderHeaders(); renderFilterChips(); renderRollingTable(); renderBacklog(); renderBookmarks(); renderHistory(); }
 
-    function openAddModal() {
+    // 支援從頂部「➕ 新增」(預設本週) 或各週次「➕ 新增」(預設點擊的該週)
+    function openAddModal(defaultWeekIdx = null) {
       const sel = document.getElementById('modal-week-select');
+      const targetIdx = (typeof defaultWeekIdx === 'number' && appData.weeks[defaultWeekIdx])
+        ? defaultWeekIdx
+        : Math.max(0, appData.weeks.findIndex(w => w.isCurrent));
+
       sel.innerHTML = appData.weeks.map((w, idx) => {
         const label = w.id === 'WPENDING' ? `${escapeHtml(w.weekNum)} (${escapeHtml(w.date)})` : `W${escapeHtml(w.weekNum)} (${escapeHtml(w.date)})`;
-        return `<option value="${idx}" ${w.isCurrent ? 'selected' : ''}>${label}${w.isCurrent ? ' 📍本週' : ''}</option>`;
+        return `<option value="${idx}" ${idx === targetIdx ? 'selected' : ''}>${label}${w.isCurrent ? ' 📍本週' : ''}</option>`;
       }).join('');
       populateCategorySelects();
-
       document.querySelector('input[name="modal-destination"][value="week"]').checked = true;
       toggleModalFields();
       toggleModalUI('add-modal', 'add-modal-box', true);
+      setTimeout(() => document.getElementById('modal-text-input')?.focus(), 80);
     }
 
-    function closeAddModal() {
-      toggleModalUI('add-modal', 'add-modal-box', false);
-    }
+    const closeAddModal = () => toggleModalUI('add-modal', 'add-modal-box', false);
 
-    function togglePrepOption() {}
+    function handleAddModalKeyDown(e) {
+      if (e.key === 'Enter' && !e.isComposing) {
+        e.preventDefault();
+        submitModalItem();
+      }
+    }
 
     function toggleModalFields() {
-      const dest = document.querySelector('input[name="modal-destination"]:checked').value;
-      const weekFields = document.getElementById('modal-week-fields');
-      const backlogFields = document.getElementById('modal-backlog-fields');
-      const prepBox = document.getElementById('modal-prep-box');
-
-      if (dest === 'week') {
-        weekFields.classList.remove('hidden');
-        backlogFields.classList.add('hidden');
-        prepBox.classList.remove('hidden');
-      } else {
-        weekFields.classList.add('hidden');
-        backlogFields.classList.remove('hidden');
-        prepBox.classList.add('hidden');
-      }
+      const isWeek = document.querySelector('input[name="modal-destination"]:checked').value === 'week';
+      document.getElementById('modal-week-fields').classList.toggle('hidden', !isWeek);
+      document.getElementById('modal-backlog-fields').classList.toggle('hidden', isWeek);
+      document.getElementById('modal-prep-box').classList.toggle('hidden', !isWeek);
     }
 
     function submitModalItem() {
       const dest = document.querySelector('input[name="modal-destination"]:checked').value;
       const tag = document.getElementById('modal-tag-select').value;
       const text = document.getElementById('modal-text-input').value.trim();
-
-      if (!text) { showToast('請輸入內容！', 'error'); return; }
+      if (!text) return showToast('請輸入內容！', 'error');
 
       if (dest === 'backlog') {
-        const priority = document.getElementById('modal-priority-select').value;
-        appData.backlog.unshift({ id: genId('b'), priority: priority, tag: tag, text: text, details: '' });
+        const pri = document.getElementById('modal-priority-select').value;
+        appData.backlog.unshift({ id: genId('b'), priority: pri, tag, text, details: '' });
         document.getElementById('modal-text-input').value = '';
-        saveData();
-        closeAddModal();
-        renderBacklog();
-        showToast('✅ 已加入任務池！');
+        saveData(); closeAddModal(); renderBacklog(); showToast('✅ 已加入任務池！');
       } else {
         const wIdx = parseInt(document.getElementById('modal-week-select').value, 10);
         const type = document.querySelector('input[name="modal-item-type"]:checked').value;
         const prepW = parseInt(document.getElementById('modal-prep-weeks').value, 10);
-
         const tw = appData.weeks[wIdx];
         if (!tw) return;
         if (type === 'event') tw.events.push({ id: genId('e'), tag, text, details: '' });
         else tw.tasks.unshift({ id: genId('t'), tag, text, details: '', done: false });
 
         if (prepW > 0) {
-          if (type === 'event') {
-            tw.tasks.unshift({
-              id: genId('t-prep-0'),
-              tag,
-              text: `[預備] ${text}`,
-              details: '',
-              done: false
-            });
-          }
+          if (type === 'event') tw.tasks.unshift({ id: genId('t-prep-0'), tag, text: `[預備] ${text}`, details: '', done: false });
           for (let i = 1; i <= prepW; i++) {
-            if (wIdx - i >= 0) {
-              appData.weeks[wIdx - i].tasks.unshift({
-                id: genId(`t-prep-${i}`),
-                tag,
-                text: `[提前 ${i} 週預備] ${text}`,
-                details: '',
-                done: false
-              });
-            }
+            if (wIdx - i >= 0) appData.weeks[wIdx - i].tasks.unshift({ id: genId(`t-prep-${i}`), tag, text: `[提前 ${i} 週預備] ${text}`, details: '', done: false });
           }
         }
         document.getElementById('modal-text-input').value = '';
-        saveData();
-        closeAddModal();
-        renderRollingTable();
-        showToast('✅ 新增成功！');
+        saveData(); closeAddModal(); renderRollingTable(); showToast('✅ 新增成功！');
       }
     }
 
-    // 啟動系統並載入無容量限制的 IndexedDB 資料庫與裝置日期同步
     syncCurrentWeekByDeviceDate();
     initResizers();
     renderAll();
@@ -2670,23 +1622,9 @@
     updateUndoRedoButtons();
     initUnlimitedStorage();
 
-    // 視窗焦點切換或關閉前自動強制同步，確保資料零遺失
-    window.addEventListener('focus', () => {
-      if (syncCurrentWeekByDeviceDate()) {
-        saveData(true);
-        renderAll();
-      }
-    });
-
-    window.addEventListener('visibilitychange', () => {
-      if (document.visibilityState === 'hidden') {
-        saveData(true);
-      }
-    });
-
-    window.addEventListener('beforeunload', () => {
-      saveData(true);
-    });
+    window.addEventListener('focus', () => { if (syncCurrentWeekByDeviceDate()) { saveData(true); renderAll(); } });
+    window.addEventListener('visibilitychange', () => { if (document.visibilityState === 'hidden') saveData(true); });
+    window.addEventListener('beforeunload', () => saveData(true));
   </script>
 </body>
 </html>
